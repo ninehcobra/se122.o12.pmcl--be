@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Group.init({
-    url: DataTypes.STRING,
+    name: DataTypes.STRING,
     description: DataTypes.STRING,
   }, {
     sequelize,

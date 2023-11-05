@@ -71,12 +71,15 @@ const login = async (rawUserData) => {
                 if (match) {
                     return {
                         EM: 'success',
-                        ER: 0
+                        EC: 0,
+                        DT: {
+                            access_token: ''
+                        }
                     };
                 } else {
                     return {
                         EM: 'Wrong password',
-                        ER: 3
+                        EC: 3
                     };
                 }
             } else {

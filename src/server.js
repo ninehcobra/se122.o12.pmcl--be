@@ -4,6 +4,7 @@ import initWebRoutes from "./route/web"
 import initApiRoutes from "./route/api"
 import dotenv from "dotenv"
 import bodyParser from "body-parser"
+import { createJWT, verifyToken } from "./middleware/JWTAction"
 
 dotenv.config()
 
@@ -32,9 +33,14 @@ app.use(function (req, res, next) {
 // config View engine
 configViewEngine(app)
 
+
 // config body parser
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
+
+// test JWT
+createJWT()
+verifyToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiY29uZ2NoaW5oIiwiaWF0IjoxNjk5MTY4NzEyfQ.tqB9mhFCpWIvMO8exL7sGNgpgiyWunaRRk9tkVIBvC4")
 
 //init web routes
 initWebRoutes(app)

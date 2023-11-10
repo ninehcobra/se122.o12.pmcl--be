@@ -4,6 +4,7 @@ import initWebRoutes from "./route/web"
 import initApiRoutes from "./route/api"
 import dotenv from "dotenv"
 import bodyParser from "body-parser"
+import cookieParser from "cookie-parser"
 import { createJWT, verifyToken } from "./middleware/JWTAction"
 
 dotenv.config()
@@ -14,7 +15,7 @@ const app = express()
 app.use(function (req, res, next) {
 
     // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
 
     // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -33,20 +34,26 @@ app.use(function (req, res, next) {
 // config View engine
 configViewEngine(app)
 
+// config cookie parser
+app.use(cookieParser())
+
 
 // config body parser
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
 // test JWT
-createJWT()
-verifyToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiY29uZ2NoaW5oIiwiaWF0IjoxNjk5MTY4NzEyfQ.tqB9mhFCpWIvMO8exL7sGNgpgiyWunaRRk9tkVIBvC4")
+
 
 //init web routes
 initWebRoutes(app)
 initApiRoutes(app)
 
 const PORT = process.env.PORT || 8888
+
+app.use((req, res) => {
+    return res.send('404 not found')
+})
 
 app.listen(PORT, () => {
     console.log(`App is running on the port: http://localhost:${PORT}`)

@@ -1,6 +1,8 @@
 import db from "../models/index"
 import bcrypt from 'bcrypt'
 import { Op } from "sequelize"
+import { getGroupWithRoles } from "./JWTService"
+import { createJWT } from "../middleware/JWTAction"
 
 const salt = bcrypt.genSaltSync(10)
 
@@ -24,7 +26,8 @@ const registerNewUser = async (rawUserData) => {
                 await db.User.create({
                     email: rawUserData.email,
                     password: hashpassword,
-                    name: rawUserData.name
+                    name: rawUserData.name,
+                    groupId: 2
                 })
 
                 return {
@@ -69,11 +72,21 @@ const login = async (rawUserData) => {
             if (user) {
                 const match = await bcrypt.compare(rawUserData.password, user.password);
                 if (match) {
+
+                    let roles = await getGroupWithRoles(user)
+                    let payload = {
+                        email: user.email,
+                        roles,
+                        expiresIn: '1h'
+                    }
+                    let token = createJWT(payload)
+
                     return {
                         EM: 'success',
                         EC: 0,
                         DT: {
-                            access_token: ''
+                            access_token: token,
+
                         }
                     };
                 } else {

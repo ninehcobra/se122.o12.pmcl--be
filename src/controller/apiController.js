@@ -25,10 +25,12 @@ const handleLogin = async (req, res) => {
 
     let data = await authenticationService.login(req.body)
 
-    return res.status(200).json({
+    res.cookie("jwt", data.DT, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
+
+    return res.status(402).json({
         EM: data.EM,
         EC: data.EC,
-        DT: '',
+        DT: data.DT,
     })
 }
 

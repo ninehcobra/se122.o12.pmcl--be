@@ -1,6 +1,6 @@
 import express from "express"
 import apiController from "../controller/apiController"
-import { checkUserJWT } from "../middleware/JWTAction";
+import { checkUserJWT, checkUserPermission } from "../middleware/JWTAction";
 
 const router = express.Router()
 
@@ -21,13 +21,15 @@ const checkUserLogin = (req, res, next) => {
 
 
 const initWebRoutes = (app) => {
-    router.get("/", checkUserJWT, (req, res) => {
+    router.all('*', checkUserJWT, checkUserPermission)
+    router.get("/", (req, res) => {
         console.log(req.user)
         return res.send('api ne')
     })
 
 
     // rest api
+    // router.all("*", checkUserJWT, checkUserPermission,)
 
     router.post("/register", apiController.handleRegisterNewUser)
     router.post("/login", apiController.handleLogin)

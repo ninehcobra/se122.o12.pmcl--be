@@ -24,10 +24,12 @@ const handleLogin = async (req, res) => {
     console.log(req.body)
 
     let data = await authenticationService.login(req.body)
+    if (data && data.DT && data.DT.access_token) {
+        res.cookie("jwt", data.DT, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
+    }
 
-    res.cookie("jwt", data.DT, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
 
-    return res.status(402).json({
+    return res.status(200).json({
         EM: data.EM,
         EC: data.EC,
         DT: data.DT,

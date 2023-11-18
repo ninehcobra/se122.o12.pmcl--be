@@ -76,6 +76,7 @@ const login = async (rawUserData) => {
 
                     let roles = await getGroupWithRoles(user)
                     let payload = {
+                        id: user.id,
                         address: user.address,
                         name: user.name,
                         avatar: user.avatar,

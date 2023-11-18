@@ -74,6 +74,25 @@ const handleCreateGroupRole = async (req, res) => {
     })
 }
 
+const handleCreateCourse = async (req, res) => {
+    req.body.user = req.user
+    let data = await courseService.createCourse(req.body)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleGetOwnerId = async (req, res) => {
+    let data = await courseService.getOwnerCourse(req.query.id)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
 
 module.exports = {
     testApi,
@@ -82,5 +101,7 @@ module.exports = {
     handlegetUserAccount,
     handlegetCourse,
     handleCreateRole,
-    handleCreateGroupRole
+    handleCreateGroupRole,
+    handleCreateCourse,
+    handleGetOwnerId
 }

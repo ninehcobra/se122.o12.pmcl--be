@@ -29,6 +29,8 @@ const initWebRoutes = (app) => {
     router.post("/create-grouprole", apiController.handleCreateGroupRole)
 
     router.get("/course", apiController.handlegetCourse)
+    router.post("/create-course", apiController.handleCreateCourse)
+    router.get("/course-by-ownerid", apiController.handleGetOwnerId)
 
 
     router.get("/api/test-api", apiController.testApi)

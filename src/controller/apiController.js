@@ -1,4 +1,6 @@
 import authenticationService from "../service/authenticationService"
+import courseService from "../service/courseService"
+import JWTService from "../service/JWTService"
 
 
 const testApi = (req, res) => {
@@ -36,8 +38,49 @@ const handleLogin = async (req, res) => {
     })
 }
 
+const handlegetUserAccount = async (req, res) => {
+    return res.status(200).json({
+        EC: 0,
+        EM: 'success',
+        DT: req.user
+    })
+}
+
+const handlegetCourse = async (req, res) => {
+
+    let data = await courseService.getCourse(req.query.id)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleCreateRole = async (req, res) => {
+    let data = await JWTService.createRole(req.body)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleCreateGroupRole = async (req, res) => {
+    let data = await JWTService.createGroupRole(req.body)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+
 module.exports = {
     testApi,
     handleRegisterNewUser,
-    handleLogin
+    handleLogin,
+    handlegetUserAccount,
+    handlegetCourse,
+    handleCreateRole,
+    handleCreateGroupRole
 }

@@ -1,14 +1,14 @@
 import jwt from "jsonwebtoken"
 require("dotenv").config()
 
-const nonSecurePaths = ['/', '/register', '/login']
+const nonSecurePaths = ['/', '/register', '/login', '/course']
 
 
 const createJWT = (payload) => {
 
     let token = null
     try {
-        token = jwt.sign(payload, process.env.JWT_SECRET);
+        token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
     } catch (error) {
         console.log(error)
     }
@@ -17,12 +17,14 @@ const createJWT = (payload) => {
     return token
 }
 
+
 let verifyToken = (token) => {
+
     return new Promise((resolve, reject) => {
         jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
             if (err) {
                 console.log(err);
-                reject(err);
+                resolve(null)
             } else {
                 resolve(decoded);
             }
@@ -31,7 +33,7 @@ let verifyToken = (token) => {
 }
 
 const checkUserPermission = (req, res, next) => {
-    if (nonSecurePaths.includes(req.path)) return next();
+    if (nonSecurePaths.includes(req.path) || req.path === '/account') return next();
     if (req.user) {
         let email = req.user.email
         let roles = req.user.roles.Roles
@@ -43,7 +45,7 @@ const checkUserPermission = (req, res, next) => {
                 EM: `You don't have permission to access this resources`
             })
         }
-        console.log(currentUrl)
+
         let canAccess = roles.some(item => item.url === currentUrl)
         if (canAccess) {
             next()
@@ -67,16 +69,25 @@ const checkUserPermission = (req, res, next) => {
     }
 }
 
+const extractToken = (req) => {
+    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+        return req.headers.authorization.split(' ')[1]
+    }
+    return null
+}
+
 const checkUserJWT = async (req, res, next) => {
+    console.log('Đang thực hiện request ở link: ', req.path)
     if (nonSecurePaths.includes(req.path)) return next();
     let cookies = req.cookies;
-    if (cookies && cookies.jwt) {
-        let token = cookies.jwt.access_token
+    const tokenFromHeader = extractToken(req)
 
+    if (cookies && cookies.jwt || tokenFromHeader) {
+        let token = cookies && cookies.jwt ? cookies.jwt.access_token : tokenFromHeader
         let decoded = await verifyToken(token)
         if (decoded) {
             req.user = decoded
-
+            req.token = token
             next()
         }
         else {
@@ -87,6 +98,9 @@ const checkUserJWT = async (req, res, next) => {
             })
         }
     }
+
+
+
     else {
         return res.status(401).json({
             EC: -1,

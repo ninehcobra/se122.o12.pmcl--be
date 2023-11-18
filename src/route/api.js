@@ -2,21 +2,11 @@ import express from "express"
 import apiController from "../controller/apiController"
 import { checkUserJWT, checkUserPermission } from "../middleware/JWTAction";
 
+
 const router = express.Router()
 
 
-const checkUserLogin = (req, res, next) => {
-    const nonSecurePaths = ['/', '/register', '/login']
-    if (nonSecurePaths.includes(req.path)) return next();
 
-
-    // authentication
-    if (user) {
-        next()
-    } else {
-
-    }
-}
 
 
 
@@ -26,6 +16,7 @@ const initWebRoutes = (app) => {
         console.log(req.user)
         return res.send('api ne')
     })
+    router.get("/account", apiController.handlegetUserAccount)
 
 
     // rest api
@@ -33,6 +24,11 @@ const initWebRoutes = (app) => {
 
     router.post("/register", apiController.handleRegisterNewUser)
     router.post("/login", apiController.handleLogin)
+    router.post("/create-role", apiController.handleCreateRole)
+
+    router.post("/create-grouprole", apiController.handleCreateGroupRole)
+
+    router.get("/course", apiController.handlegetCourse)
 
 
     router.get("/api/test-api", apiController.testApi)

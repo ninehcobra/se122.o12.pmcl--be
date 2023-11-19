@@ -32,8 +32,12 @@ const initWebRoutes = (app) => {
     router.post("/create-course", apiController.handleCreateCourse)
     router.get("/course-by-ownerid", apiController.handleGetOwnerId)
 
+    router.post("/create-blog", apiController.handleCreateBlog)
+    router.post("/create-comment", apiController.handleCreateComment)
+    router.get("/get-blog", apiController.handleGetBlog)
 
-    router.get("/api/test-api", apiController.testApi)
+
+    router.get("/test-api", apiController.testApi)
 
     return app.use("/api", router)
 }

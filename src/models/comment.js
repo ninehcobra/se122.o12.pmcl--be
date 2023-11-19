@@ -3,7 +3,7 @@ const {
     Model, DATEONLY
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-    class BlogReact extends Model {
+    class Comment extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
@@ -12,17 +12,20 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
 
-
+            Comment.belongsTo(models.Blog, {
+                foreignKey: 'id'
+            })
+            Comment.belongsTo(models.User, { foreignKey: 'ownerId' })
         }
     }
-    BlogReact.init({
-        type: DataTypes.STRING,
-        comment: DataTypes.STRING,
+    Comment.init({
+        ownerId: DataTypes.INTEGER,
         blogId: DataTypes.INTEGER,
+        content: DataTypes.STRING,
 
     }, {
         sequelize,
-        modelName: 'BlogReact',
+        modelName: 'Comment',
     });
-    return BlogReact;
+    return Comment;
 };

@@ -1,6 +1,7 @@
 import authenticationService from "../service/authenticationService"
 import courseService from "../service/courseService"
 import JWTService from "../service/JWTService"
+import blogService from "../service/blogService"
 
 
 const testApi = (req, res) => {
@@ -93,6 +94,34 @@ const handleGetOwnerId = async (req, res) => {
     })
 }
 
+const handleCreateBlog = async (req, res) => {
+    req.body.user = req.user
+    let data = await blogService.createBlog(req.body)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleCreateComment = async (req, res) => {
+    req.body.user = req.user
+    let data = await blogService.createComment(req.body)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleGetBlog = async (req, res) => {
+    let data = await blogService.getBlog(req.query.id)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
 
 module.exports = {
     testApi,
@@ -103,5 +132,8 @@ module.exports = {
     handleCreateRole,
     handleCreateGroupRole,
     handleCreateCourse,
-    handleGetOwnerId
+    handleGetOwnerId,
+    handleCreateBlog,
+    handleCreateComment,
+    handleGetBlog
 }

@@ -123,6 +123,15 @@ const handleGetBlog = async (req, res) => {
     })
 }
 
+const handleDeleteBlog = async (req, res) => {
+    let data = await blogService.deleteBlog(req.body.blogId)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
 module.exports = {
     testApi,
     handleRegisterNewUser,
@@ -135,5 +144,6 @@ module.exports = {
     handleGetOwnerId,
     handleCreateBlog,
     handleCreateComment,
-    handleGetBlog
+    handleGetBlog,
+    handleDeleteBlog
 }

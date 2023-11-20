@@ -35,6 +35,7 @@ const initWebRoutes = (app) => {
     router.post("/create-blog", apiController.handleCreateBlog)
     router.post("/create-comment", apiController.handleCreateComment)
     router.get("/get-blog", apiController.handleGetBlog)
+    router.post("/delete-blog", apiController.handleDeleteBlog)
 
 
     router.get("/test-api", apiController.testApi)

@@ -12,7 +12,11 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
             Blog.hasMany(models.Comment, {
-                foreignKey: 'blogId'
+
+                foreignKey: {
+                    name: 'blogId',
+                    onDelete: 'CASCADE',
+                }
             })
             Blog.belongsTo(models.User, { foreignKey: 'id' })
         }

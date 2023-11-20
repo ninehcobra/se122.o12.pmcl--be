@@ -12,6 +12,9 @@ module.exports = {
             blogId: {
                 type: Sequelize.INTEGER
             },
+            commentId: {
+                type: Sequelize.INTEGER
+            },
             content: {
                 type: Sequelize.STRING
             },

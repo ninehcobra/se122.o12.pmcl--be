@@ -3,7 +3,13 @@ import db from "../models/index"
 
 const createCourse = async (data) => {
 
-    if (data && data.title && data.description && data.user && data.newPrice)
+    if (data && data.title && data.description && data.user && data.newPrice) {
+        if (data.oldPrice && data.newPrice > data.oldPrice) {
+            return {
+                EC: 1,
+                EM: 'Wrong inputs'
+            }
+        }
         try {
             await db.Course.create({
                 newPrice: data.newPrice,
@@ -24,6 +30,7 @@ const createCourse = async (data) => {
                 EM: 'Something wrong on server'
             }
         }
+    }
     else {
         return {
             EC: -2,
@@ -120,8 +127,71 @@ const getOwnerCourse = async (ownerId) => {
     }
 }
 
+const deleteCourse = async (courseId) => {
+    if (courseId) {
+        try {
+            await db.Course.destroy({
+                where: {
+                    id: courseId
+                }
+            })
+            return {
+                EC: 0,
+                EM: 'Delete success'
+            }
+        } catch (error) {
+            return {
+                EC: -1,
+                EM: 'Something wrong on server'
+            }
+        }
+    }
+    else {
+        return {
+            EC: -2,
+            EM: 'Missing parameter'
+        }
+    }
+}
+
+const updateCourse = async (data) => {
+    if (data && data.id && data.title && data.description) {
+        try {
+            await db.Course.update({
+                title: data.title,
+                description: data.description,
+                thumbnail: data.thumbnail
+            }, {
+                where: {
+                    id: data.id
+                }
+            })
+            return {
+                EC: 0,
+                EM: 'Update course success'
+            }
+        } catch (error) {
+            return {
+                EC: -1,
+                EM: 'Something wrong on server'
+            }
+        }
+    }
+    else {
+        return {
+            EC: -2,
+            EM: 'Missing parameter'
+        }
+    }
+}
+
+
+
 module.exports = {
     getCourse,
     createCourse,
-    getOwnerCourse
+    getOwnerCourse,
+    deleteCourse,
+    updateCourse,
+
 }

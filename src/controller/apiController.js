@@ -85,6 +85,26 @@ const handleCreateCourse = async (req, res) => {
     })
 }
 
+const handleUpdateCourse = async (req, res) => {
+    req.body.user = req.user
+    let data = await courseService.updateCourse(req.body)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleDeleteCourse = async (req, res) => {
+    req.body.user = req.user
+    let data = await courseService.deleteCourse(req.body.id)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
 const handleGetOwnerId = async (req, res) => {
     let data = await courseService.getOwnerCourse(req.query.id)
     return res.status(200).json({
@@ -115,7 +135,7 @@ const handleCreateComment = async (req, res) => {
 }
 
 const handleGetBlog = async (req, res) => {
-    let data = await blogService.getBlog(req.query.id)
+    let data = await blogService.getBlog(req.query)
     return res.status(200).json({
         EC: data.EC,
         EM: data.EM,
@@ -125,6 +145,55 @@ const handleGetBlog = async (req, res) => {
 
 const handleDeleteBlog = async (req, res) => {
     let data = await blogService.deleteBlog(req.body.blogId)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleUpdateBlog = async (req, res) => {
+    let data = await blogService.updateBlog(req.body)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleDeleteComment = async (req, res) => {
+    let data = await blogService.deleteComment(req.body.id)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleCreateTopic = async (req, res) => {
+    let data = await blogService.createTopic(req.body)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleDeleteTopic = async (req, res) => {
+    let data = await blogService.deleteTopic(req.body.id)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleUpdateTopic = async (req, res) => {
+
+}
+
+const handleGetTopic = async (req, res) => {
+    let data = await blogService.getTopic()
     return res.status(200).json({
         EC: data.EC,
         EM: data.EM,
@@ -145,5 +214,13 @@ module.exports = {
     handleCreateBlog,
     handleCreateComment,
     handleGetBlog,
-    handleDeleteBlog
+    handleDeleteBlog,
+    handleUpdateBlog,
+    handleDeleteComment,
+    handleUpdateCourse,
+    handleDeleteCourse,
+    handleCreateTopic,
+    handleDeleteTopic,
+    handleUpdateTopic,
+    handleGetTopic,
 }

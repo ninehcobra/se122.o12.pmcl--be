@@ -10,7 +10,7 @@ const createJWT = (payload) => {
     try {
         token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
     } catch (error) {
-        console.log(error)
+        console.log('Lỗi tạo token')
     }
 
 
@@ -23,7 +23,7 @@ let verifyToken = (token) => {
     return new Promise((resolve, reject) => {
         jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
             if (err) {
-                console.log(err);
+                console.log('Tài khoản hết hạn xác thực');
                 resolve(null)
             } else {
                 resolve(decoded);

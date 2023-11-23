@@ -18,7 +18,8 @@ module.exports = (sequelize, DataTypes) => {
                     onDelete: 'CASCADE',
                 }
             })
-            Blog.belongsTo(models.User, { foreignKey: 'id' })
+            Blog.belongsTo(models.User, { foreignKey: 'ownerId' })
+            Blog.belongsToMany(models.Topic, { through: 'BlogTopic' })
         }
     }
     Blog.init({
@@ -26,7 +27,8 @@ module.exports = (sequelize, DataTypes) => {
         title: DataTypes.STRING,
         description: DataTypes.STRING,
         thumbnail: DataTypes.STRING,
-
+        contentHTML: DataTypes.TEXT('long'),
+        contentMarkdown: DataTypes.TEXT('long'),
     }, {
         sequelize,
         modelName: 'Blog',

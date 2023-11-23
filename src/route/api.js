@@ -31,11 +31,19 @@ const initWebRoutes = (app) => {
     router.get("/course", apiController.handlegetCourse)
     router.post("/create-course", apiController.handleCreateCourse)
     router.get("/course-by-ownerid", apiController.handleGetOwnerId)
+    router.post("/update-course", apiController.handleUpdateCourse)
+    router.post("/delete-course", apiController.handleDeleteCourse)
 
     router.post("/create-blog", apiController.handleCreateBlog)
     router.post("/create-comment", apiController.handleCreateComment)
     router.get("/get-blog", apiController.handleGetBlog)
     router.post("/delete-blog", apiController.handleDeleteBlog)
+    router.post("/update-blog", apiController.handleUpdateBlog)
+    router.post("/delete-comment", apiController.handleDeleteComment)
+
+    router.post("/create-topic", apiController.handleCreateTopic)
+    router.post("/delete-topic", apiController.handleDeleteTopic)
+    router.get("/get-topic", apiController.handleGetTopic)
 
 
     router.get("/test-api", apiController.testApi)

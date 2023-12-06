@@ -24,6 +24,7 @@ const initWebRoutes = (app) => {
 
     router.post("/register", apiController.handleRegisterNewUser)
     router.post("/login", apiController.handleLogin)
+    router.post("/logout", apiController.handleLogOut)
     router.post("/create-role", apiController.handleCreateRole)
 
     router.post("/create-grouprole", apiController.handleCreateGroupRole)

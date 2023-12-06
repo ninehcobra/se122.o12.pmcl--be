@@ -1,12 +1,14 @@
 import db from "../models/index"
 
 const createBlog = async (data) => {
-    if (data && data.title && data.description && data.user) {
+    if (data && data.title && data.description && data.user && data.content) {
         try {
             await db.Blog.create({
                 ownerId: data.user.id,
                 title: data.title,
                 description: data.description,
+                contentHTML: data.content.contentHTML,
+                contentMarkdown: data.content.contentMarkdown,
                 thumbnail: data.thumbnail ? data.thumbnail : 'https://tse2.mm.bing.net/th?id=OIP.KLSv-elji-ommAvjmQoEMAHaFj&pid=Api&P=0&h=220'
             })
             return {

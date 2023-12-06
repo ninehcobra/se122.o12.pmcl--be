@@ -12,7 +12,6 @@ const testApi = (req, res) => {
 }
 
 const handleRegisterNewUser = async (req, res) => {
-    console.log(req.body)
 
     let data = await authenticationService.registerNewUser(req.body)
 
@@ -24,8 +23,6 @@ const handleRegisterNewUser = async (req, res) => {
 }
 
 const handleLogin = async (req, res) => {
-    console.log(req.body)
-
     let data = await authenticationService.login(req.body)
     if (data && data.DT && data.DT.access_token) {
         res.cookie("jwt", data.DT, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
@@ -36,6 +33,14 @@ const handleLogin = async (req, res) => {
         EM: data.EM,
         EC: data.EC,
         DT: data.DT,
+    })
+}
+
+const handleLogOut = async (req, res) => {
+    res.cookie("jwt", req.cookie, { expires: new Date(Date.now()) })
+    return res.status(200).json({
+        EM: "Log out success",
+        EC: 0
     })
 }
 
@@ -223,4 +228,5 @@ module.exports = {
     handleDeleteTopic,
     handleUpdateTopic,
     handleGetTopic,
+    handleLogOut
 }

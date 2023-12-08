@@ -83,6 +83,7 @@ const login = async (rawUserData) => {
                         phoneNumber: user.phoneNumber,
                         gender: user.gender,
                         email: user.email,
+                        createdAt: user.createdAt,
                         roles,
                         expiresIn: process.env.JWT_EXPIRES_IN
                     }

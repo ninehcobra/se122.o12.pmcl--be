@@ -61,38 +61,49 @@ const createComment = async (data) => {
 
 const getBlog = async (data) => {
     if (data && data.id) {
+
         try {
-            let data = await db.Blog.findOne(
+            let res = await db.Blog.findOne(
                 {
                     where: {
                         id: data.id
-                    },
-                    include: {
-                        model: db.Comment,
-                        include: {
-                            model: db.User,
-                            attributes: ["name", "avatar", "id/"]
-                        }
                     }
+                    ,
+                    include: [
+                        {
+                            model: db.Comment,
+                            include:
+                            {
+                                model: db.User,
+                                attributes: ["name", "avatar", "id"]
+                            }
+
+
+                        },
+                        {
+                            model: db.User,
+                            attributes: ["name", "avatar", "id"]
+                        }
+                    ]
                 }
             )
-            for (let i = 0; i < data.Comments.length; i++) {
-                console.log(data.Comments[i].dataValues.id)
+
+            for (let i = 0; i < res.Comments.length; i++) {
                 let repplies = await db.Comment.findAll({
                     where: {
-                        commentId: data.Comments[i].dataValues.id,
+                        commentId: res.Comments[i].dataValues.id,
                         blogId: null
                     },
                     include: {
                         model: db.User,
-                        attributes: ["name", "avatar", "id/"]
+                        attributes: ["name", "avatar", "id"]
                     }
                 })
                 if (repplies) {
-                    data.Comments[i].dataValues.Repplies = repplies
+                    res.Comments[i].dataValues.Repplies = repplies
                 }
                 else {
-                    data.Comments[i].dataValues.Repplies = {}
+                    res.Comments[i].dataValues.Repplies = {}
                 }
             }
 
@@ -100,7 +111,7 @@ const getBlog = async (data) => {
             return {
                 EC: 0,
                 EM: 'Get blog success',
-                DT: data
+                DT: res
             }
         } catch (error) {
             return {
@@ -121,7 +132,8 @@ const getBlog = async (data) => {
                     attributes: ["name", "avatar", "id"]
                 },
                 offset: offset,
-                limit: limit
+                limit: limit,
+                order: [['createdAt', 'DESC']]
             }
             )
             return {
@@ -139,7 +151,7 @@ const getBlog = async (data) => {
                 let data = await db.Blog.findAll({
                     include: {
                         model: db.User,
-                        attributes: ["name", "avatar", "id/"]
+                        attributes: ["name", "avatar", "id"]
                     }
                 })
 

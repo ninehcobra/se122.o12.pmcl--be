@@ -140,6 +140,7 @@ const handleCreateComment = async (req, res) => {
 }
 
 const handleGetBlog = async (req, res) => {
+
     let data = await blogService.getBlog(req.query)
     return res.status(200).json({
         EC: data.EC,

@@ -18,10 +18,18 @@ module.exports = (sequelize, DataTypes) => {
     Course.init({
         title: DataTypes.STRING,
         description: DataTypes.STRING,
+        ownerId: DataTypes.INTEGER,
+
+        isPublished: DataTypes.BOOLEAN,
+
         newPrice: DataTypes.INTEGER,
         oldPrice: DataTypes.INTEGER,
-        ownerId: DataTypes.INTEGER,
-        thumbnail: DataTypes.STRING
+
+        thumbnail: DataTypes.STRING,
+
+        categoryId: DataTypes.INTEGER,
+
+        attachments: DataTypes.JSON
     }, {
         sequelize,
         modelName: 'Course',

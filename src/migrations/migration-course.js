@@ -15,17 +15,31 @@ module.exports = {
             description: {
                 type: Sequelize.STRING
             },
+            ownerId: {
+                type: Sequelize.INTEGER
+            },
+
+            isPublished: {
+                type: Sequelize.BOOLEAN
+            },
+
             newPrice: {
                 type: Sequelize.INTEGER
             },
             oldPrice: {
                 type: Sequelize.INTEGER
             },
-            ownerId: {
-                type: Sequelize.INTEGER
-            },
+
             thumbnail: {
                 type: Sequelize.STRING
+            },
+
+            categoryId: {
+                type: Sequelize.INTEGER
+            },
+
+            attachments: {
+                type: Sequelize.JSON
             },
             createdAt: {
                 allowNull: false,

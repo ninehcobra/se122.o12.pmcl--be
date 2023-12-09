@@ -28,7 +28,8 @@ const registerNewUser = async (rawUserData) => {
                     email: rawUserData.email,
                     password: hashpassword,
                     name: rawUserData.name,
-                    groupId: 2
+                    groupId: 2,
+                    avatar: 'https://raw.githubusercontent.com/ninehcobra/free-host-image/main/News/logo.png'
                 })
 
                 return {

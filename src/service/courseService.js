@@ -2,26 +2,19 @@ import db from "../models/index"
 
 
 const createCourse = async (data) => {
-
-    if (data && data.title && data.description && data.user && data.newPrice) {
-        if (data.oldPrice && data.newPrice > data.oldPrice) {
-            return {
-                EC: 1,
-                EM: 'Wrong inputs'
-            }
-        }
+    if (data && data.title && data.user) {
         try {
-            await db.Course.create({
-                newPrice: data.newPrice,
-                oldPrice: data.oldPrice ? data.oldPrice : data.newPrice,
+            let res = await db.Course.create({
                 title: data.title,
-                description: data.description,
                 ownerId: data.user.id,
-                thumbnail: data.thumbnail ? data.thumbnail : 'https://tse1.mm.bing.net/th?id=OIP.Fr_PPosK1nc2m2CKfV9t9gHaE4&pid=Api&P=0&h=220'
+                isPublished: false
             })
             return {
                 EC: 0,
-                EM: 'Create course success'
+                EM: 'Create course success',
+                DT: {
+                    id: res.id
+                }
             }
 
         } catch (error) {
@@ -155,15 +148,21 @@ const deleteCourse = async (courseId) => {
 }
 
 const updateCourse = async (data) => {
-    if (data && data.id && data.title && data.description) {
+    let course = data.data
+    if (data && course.id) {
         try {
             await db.Course.update({
-                title: data.title,
-                description: data.description,
-                thumbnail: data.thumbnail
+                title: course.title,
+                description: course.description,
+                thumbnail: course.thumbnail,
+                categoryId: course.categoryId,
+                newPrice: course.newPrice,
+                isPublished: course.isPublished,
+                updatedAt: new Date(),
+
             }, {
                 where: {
-                    id: data.id
+                    id: course.id
                 }
             })
             return {

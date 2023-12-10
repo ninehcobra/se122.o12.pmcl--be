@@ -13,7 +13,6 @@ const router = express.Router()
 const initWebRoutes = (app) => {
     router.all('*', checkUserJWT, checkUserPermission)
     router.get("/", (req, res) => {
-        console.log(req.user)
         return res.send('api ne')
     })
     router.get("/account", apiController.handlegetUserAccount)
@@ -46,6 +45,8 @@ const initWebRoutes = (app) => {
     router.post("/delete-topic", apiController.handleDeleteTopic)
     router.get("/get-topic", apiController.handleGetTopic)
 
+    router.post("/create-category", apiController.handleCreateCategory)
+    router.get("/get-category", apiController.handleGetCategory)
 
     router.get("/test-api", apiController.testApi)
 

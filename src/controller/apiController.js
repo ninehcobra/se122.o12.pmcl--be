@@ -2,6 +2,7 @@ import authenticationService from "../service/authenticationService"
 import courseService from "../service/courseService"
 import JWTService from "../service/JWTService"
 import blogService from "../service/blogService"
+import categoryService from "../service/categoryService"
 
 
 const testApi = (req, res) => {
@@ -53,8 +54,8 @@ const handlegetUserAccount = async (req, res) => {
 }
 
 const handlegetCourse = async (req, res) => {
-
-    let data = await courseService.getCourse(req.query.id)
+    console.log(req.user)
+    let data = await courseService.getCourse(req.query.id, req.user.id)
     return res.status(200).json({
         EC: data.EC,
         EM: data.EM,
@@ -207,6 +208,24 @@ const handleGetTopic = async (req, res) => {
     })
 }
 
+const handleCreateCategory = async (req, res) => {
+    let data = await categoryService.createCategory(req.body.name)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleGetCategory = async (req, res) => {
+    let data = await categoryService.getCategory()
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
 module.exports = {
     testApi,
     handleRegisterNewUser,
@@ -229,5 +248,7 @@ module.exports = {
     handleDeleteTopic,
     handleUpdateTopic,
     handleGetTopic,
-    handleLogOut
+    handleLogOut,
+    handleCreateCategory,
+    handleGetCategory
 }

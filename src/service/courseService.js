@@ -32,8 +32,9 @@ const createCourse = async (data) => {
     }
 }
 
-const getCourse = async (courseId) => {
+const getCourse = async (courseId, userId) => {
     try {
+
         let course = null
         if (courseId) {
             course = await db.Course.findOne(
@@ -49,23 +50,18 @@ const getCourse = async (courseId) => {
                     }
                 }
             )
-        }
-        else {
-            course = await db.Course.findAll(
-                {
-                    include: {
-                        model: db.User,
-                        attributes: ['id'],
-                        through: { attributes: [] }
-                    }
+            if (course.ownerId !== userId) {
+                return {
+                    EC: 3,
+                    EM: `This course doesn't belong to you`
                 }
-            )
-        }
-        if (course) {
-            return {
-                EC: 0,
-                EM: 'Get course success',
-                DT: course
+            }
+            if (course) {
+                return {
+                    EC: 0,
+                    EM: 'Get course success',
+                    DT: course
+                }
             }
         }
         else {
@@ -84,7 +80,7 @@ const getCourse = async (courseId) => {
 
 const getOwnerCourse = async (ownerId) => {
     if (ownerId) {
-        console.log(ownerId)
+
         try {
             let courses = await db.Course.findAll({
                 where: {

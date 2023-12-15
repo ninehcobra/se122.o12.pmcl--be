@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
             Course.belongsToMany(models.User, { through: 'UserCourse', foreignKey: 'courseId' })
             Course.belongsToMany(models.User, { through: 'Payment', foreignKey: 'courseId' })
             Course.belongsTo(models.Category)
+            Course.hasMany(models.Chapter, { foreignKey: 'courseId' })
         }
     }
     Course.init({

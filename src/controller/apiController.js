@@ -226,6 +226,44 @@ const handleGetCategory = async (req, res) => {
     })
 }
 
+const handleCreateChapter = async (req, res) => {
+    let data = await courseService.createChapter(req.body)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleUpdateChapterPosition = async (req, res) => {
+    let data = await courseService.updateChapterPosition(req.body)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleGetChapter = async (req, res) => {
+    console.log(req.query.id, req.user.id)
+    let data = await courseService.getChapter(req.query.id, req.user.id)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleUpdateChapter = async (req, res) => {
+    req.body.user = req.user
+    let data = await courseService.updateChapter(req.body)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
 module.exports = {
     testApi,
     handleRegisterNewUser,
@@ -250,5 +288,9 @@ module.exports = {
     handleGetTopic,
     handleLogOut,
     handleCreateCategory,
-    handleGetCategory
+    handleGetCategory,
+    handleCreateChapter,
+    handleUpdateChapterPosition,
+    handleGetChapter,
+    handleUpdateChapter
 }

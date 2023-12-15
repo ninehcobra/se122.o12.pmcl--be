@@ -62,7 +62,7 @@ const checkUserPermission = (req, res, next) => {
     }
     else {
         return res.status(401).json({
-            EC: -1,
+            EC: -10,
             DT: '',
             EM: 'Not authenticated the user'
         })

@@ -41,13 +41,23 @@ const getCourse = async (courseId, userId) => {
                 {
                     where: {
                         id: courseId
-                    }
+                    },
+                    order: [[{ model: db.Chapter }, 'position', 'ASC']]
                     ,
-                    include: {
+                    include: [{
                         model: db.User,
                         attributes: ['id'],
                         through: { attributes: [] }
+                    },
+                    {
+                        model: db.Category,
+                        attributes: ['name']
                     }
+                        ,
+                    {
+                        model: db.Chapter
+                    }
+                    ]
                 }
             )
             if (course.ownerId !== userId) {
@@ -180,6 +190,161 @@ const updateCourse = async (data) => {
     }
 }
 
+const createChapter = async (data) => {
+
+    if (data && data.courseId && data.title) {
+        try {
+
+            let lastChapter = await db.Chapter.findOne({
+                where: {
+                    courseId: data.courseId
+                },
+                order: [['position', 'DESC']]
+            })
+
+            console.log(lastChapter)
+
+            let position = lastChapter ? lastChapter.position + 1 : 0
+
+            await db.Chapter.create({
+                title: data.title,
+                courseId: data.courseId,
+                position: position,
+                isPublished: false,
+                isFree: false
+            })
+            return {
+                EC: 0,
+                EM: 'Create chapter success'
+            }
+        } catch (error) {
+            return {
+                EC: -1,
+                EM: 'Something wrong on server'
+            }
+        }
+    }
+    else {
+        return {
+            EC: -2,
+            EM: 'Missing parameter'
+        }
+    }
+}
+
+const updateChapterPosition = async (data) => {
+
+    if (data && Array.isArray(data)) {
+        try {
+            for (let item of data) {
+                console.log(item)
+                await db.Chapter.update({
+                    position: item.position
+                }, {
+                    where: {
+                        id: item.id
+                    }
+                })
+            }
+            return {
+                EC: 0,
+                EM: 'Update chapter success'
+            }
+        } catch (error) {
+            return {
+                EC: -1,
+                EM: 'Something wrong on server'
+            }
+        }
+    }
+    else {
+        return {
+            EC: -2,
+            EM: 'Missing parameter'
+        }
+    }
+}
+
+const getChapter = async (chapterId, userId) => {
+    try {
+        let chapter = null
+        if (chapterId) {
+            console.log('vo ne')
+            chapter = await db.Chapter.findOne(
+                {
+                    where: {
+                        id: chapterId
+                    },
+                    include: {
+                        model: db.Course,
+                        attributes: ['ownerId']
+                    }
+                }
+            )
+
+            if (chapter && chapter.Course.ownerId === userId) {
+                return {
+                    EC: 0,
+                    EM: 'Get chapter success',
+                    DT: chapter
+                }
+            }
+            else {
+                return {
+                    EC: 2,
+                    EM: 'This chapter does not belong to you'
+                }
+            }
+        }
+        else {
+            return {
+                EC: 1,
+                EM: 'Not found chapter'
+            }
+        }
+    } catch (error) {
+        return {
+            EC: -1,
+            EM: 'Something wrong on server'
+        }
+    }
+}
+
+const updateChapter = async (data) => {
+    let chapter = data.data
+    if (data && chapter.id) {
+        try {
+            await db.Chapter.update({
+                title: chapter.title,
+                description: chapter.description,
+                videoUrl: chapter.thumbnail,
+                isPublished: chapter.isPublished,
+                isFree: chapter.isFree,
+                updatedAt: new Date(),
+
+            }, {
+                where: {
+                    id: chapter.id
+                }
+            })
+            return {
+                EC: 0,
+                EM: 'Update chapter success'
+            }
+        } catch (error) {
+            return {
+                EC: -1,
+                EM: 'Something wrong on server'
+            }
+        }
+    }
+    else {
+        return {
+            EC: -2,
+            EM: 'Missing parameter'
+        }
+    }
+}
 
 
 module.exports = {
@@ -188,5 +353,8 @@ module.exports = {
     getOwnerCourse,
     deleteCourse,
     updateCourse,
-
+    createChapter,
+    updateChapterPosition,
+    getChapter,
+    updateChapter
 }

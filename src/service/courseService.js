@@ -1,5 +1,12 @@
 import db from "../models/index"
+import axios from "axios"
+const cloudinary = require('cloudinary').v2
 
+cloudinary.config({
+    cloud_name: 'dwpz7w8y4',
+    api_key: '182458449113114',
+    api_secret: 'bQTeHxHz_qJHJO4GTv7SpQuBn1g',
+});
 
 const createCourse = async (data) => {
     if (data && data.title && data.user) {
@@ -317,7 +324,7 @@ const updateChapter = async (data) => {
             await db.Chapter.update({
                 title: chapter.title,
                 description: chapter.description,
-                videoUrl: chapter.thumbnail,
+                videoUrl: chapter.videoUrl,
                 isPublished: chapter.isPublished,
                 isFree: chapter.isFree,
                 updatedAt: new Date(),
@@ -346,6 +353,69 @@ const updateChapter = async (data) => {
     }
 }
 
+const deleteChapter = async (chapterId) => {
+    if (chapterId) {
+        try {
+            let res = await db.Chapter.findOne({
+                where: {
+                    id: chapterId
+                }
+            })
+
+            if (res) {
+                if (res && res.videoUrl) {
+                    await deleteVideoByUrl(res.videoUrl)
+                }
+                await db.Chapter.destroy({
+                    where: {
+                        id: chapterId
+                    }
+                })
+                return {
+                    EC: 0,
+                    EM: 'Delete success'
+                }
+
+            }
+            else {
+                return {
+                    EC: 1,
+                    EM: 'Not found'
+                }
+            }
+
+
+        } catch (error) {
+            return {
+                EC: -1,
+                EM: 'Something wrong on server'
+            }
+        }
+    }
+    else {
+        return {
+            EC: -2,
+            EM: 'Missing parameter'
+        }
+    }
+}
+
+const deleteVideoByUrl = async (videoUrl) => {
+
+    const publicId = videoUrl.match(/\/v\d+\/(.+?)\./)[1]
+
+    // Thực hiện yêu cầu DELETE đến Cloudinary API endpoint để xóa video
+    await cloudinary.uploader.destroy(publicId, { resource_type: 'video' }, (error, result) => {
+        if (error) {
+            console.log('Error deleting video from Cloudinary:', error);
+            return error
+        } else {
+            console.log('Cloudinary response:', result);
+            return result
+            // Xử lý kết quả xóa video ở đây
+        }
+    })
+};
 
 module.exports = {
     getCourse,
@@ -356,5 +426,6 @@ module.exports = {
     createChapter,
     updateChapterPosition,
     getChapter,
-    updateChapter
+    updateChapter,
+    deleteChapter
 }

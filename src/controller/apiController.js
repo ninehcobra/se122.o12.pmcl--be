@@ -264,6 +264,15 @@ const handleUpdateChapter = async (req, res) => {
     })
 }
 
+const handleDeleteChapter = async (req, res) => {
+    let data = await courseService.deleteChapter(req.body.id)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
 module.exports = {
     testApi,
     handleRegisterNewUser,
@@ -292,5 +301,6 @@ module.exports = {
     handleCreateChapter,
     handleUpdateChapterPosition,
     handleGetChapter,
-    handleUpdateChapter
+    handleUpdateChapter,
+    handleDeleteChapter
 }

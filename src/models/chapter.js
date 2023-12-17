@@ -11,6 +11,8 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
+            Chapter.belongsToMany(models.User, { through: 'Progress', foreignKey: 'chapterId' })
+
             Chapter.belongsTo(models.Course)
         }
     }

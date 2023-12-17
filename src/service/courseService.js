@@ -39,7 +39,7 @@ const createCourse = async (data) => {
     }
 }
 
-const getCourse = async (courseId, userId) => {
+const getCourseById = async (courseId, userId) => {
     try {
 
         let course = null
@@ -95,50 +95,75 @@ const getCourse = async (courseId, userId) => {
     }
 }
 
-const getOwnerCourse = async (ownerId) => {
-    if (ownerId) {
-
-        try {
-            let courses = await db.Course.findAll({
+const getAllCourse = async (data) => {
+    try {
+        if (data.page && data.limit) {
+            let page = parseInt(data.page)
+            let limit = parseInt(data.limit)
+            let offset = (page - 1) * limit
+            let { count, rows } = await db.Course.findAndCountAll({
                 where: {
-                    ownerId: ownerId
-                }
-            })
-            if (courses) {
-                return {
-                    EC: 0,
-                    EM: 'Get OwnCourse success',
-                    DT: courses
-                }
+                    ownerId: data.userId
+                },
+                offset: offset,
+                limit: limit,
+                order: [['createdAt', 'DESC']]
             }
-            else {
-                return {
-                    EC: 1,
-                    EM: 'No course have found'
-                }
-            }
-
-        } catch (error) {
+            )
             return {
-                EC: -1,
-                EM: 'Something wrong on server'
+                EC: 0,
+                EM: 'Get course done',
+                DT: {
+                    totalRows: count,
+                    totalPages: Math.ceil(count / limit),
+                    courses: rows
+                }
             }
         }
-    }
-    else {
+
+
+    } catch (error) {
         return {
-            EC: -2,
-            EM: 'Missing parameter'
+            EC: -1,
+            EM: 'Something wrong on server'
         }
     }
 }
 
+
 const deleteCourse = async (courseId) => {
     if (courseId) {
         try {
+            let res = await db.Course.findOne({
+                where: {
+                    id: courseId
+                }
+            })
+
+            if (res && res.thumbnail) {
+                await deleteImgByUrl(res.thumbnail)
+            }
+
             await db.Course.destroy({
                 where: {
                     id: courseId
+                }
+            })
+
+
+            let chapters = await db.Chapter.findAll({
+                where: {
+                    courseId: courseId
+                }
+            })
+            for (const element of chapters) {
+                if (element.dataValues.videoUrl) {
+                    await deleteVideoByUrl(element.dataValues.videoUrl);
+                }
+            }
+            await db.Chapter.destroy({
+                where: {
+                    courseId: courseId
                 }
             })
             return {
@@ -164,6 +189,8 @@ const updateCourse = async (data) => {
     let course = data.data
     if (data && course.id) {
         try {
+
+
             await db.Course.update({
                 title: course.title,
                 description: course.description,
@@ -417,15 +444,83 @@ const deleteVideoByUrl = async (videoUrl) => {
     })
 };
 
+const deleteImgByUrl = async (imgUrl) => {
+
+    const publicId = imgUrl.match(/\/v\d+\/(.+?)\./)[1]
+
+    // Thực hiện yêu cầu DELETE đến Cloudinary API endpoint để xóa video
+    await cloudinary.uploader.destroy(publicId, (error, result) => {
+        if (error) {
+            console.log('Error deleting img from Cloudinary:', error);
+            return error
+        } else {
+            console.log('Cloudinary response:', result);
+            return result
+            // Xử lý kết quả xóa video ở đây
+        }
+    })
+};
+
+const getUserCourse = async (userId) => {
+    try {
+        if (userId) {
+            const courses = await db.Course.findAll({
+                where: {
+                    isPublished: true
+                },
+                include: [
+                    {
+                        model: db.User,
+                        where: {
+                            id: userId
+                        },
+                        attributes: []
+                    }
+                ]
+            })
+
+            // for (const course of courses) {
+            //     if (course.dataValues.Users.length > 0) {
+            //         course.dataValues.Users.map((item) => {
+            //             if (item.dataValues.id === userId) {
+
+            //             }
+            //         })
+            //     }
+            // }
+            courses[0].dataValues.progress = '30%'
+            console.log(courses[0].dataValues)
+
+            return {
+                EC: 0,
+                EM: 'success',
+                DT: courses
+            }
+        }
+        else {
+            return {
+                EC: -2,
+                EM: 'Missing parameters'
+            }
+        }
+    } catch (error) {
+        return {
+            EC: -1,
+            EM: 'Something wrong on server'
+        }
+    }
+}
+
 module.exports = {
-    getCourse,
+    getCourseById,
     createCourse,
-    getOwnerCourse,
+    getAllCourse,
     deleteCourse,
     updateCourse,
     createChapter,
     updateChapterPosition,
     getChapter,
     updateChapter,
-    deleteChapter
+    deleteChapter,
+    getUserCourse
 }

@@ -53,9 +53,9 @@ const handlegetUserAccount = async (req, res) => {
     })
 }
 
-const handlegetCourse = async (req, res) => {
+const handlegetCourseById = async (req, res) => {
     console.log(req.user)
-    let data = await courseService.getCourse(req.query.id, req.user.id)
+    let data = await courseService.getCourseById(req.query.id, req.user.id)
     return res.status(200).json({
         EC: data.EC,
         EM: data.EM,
@@ -111,8 +111,9 @@ const handleDeleteCourse = async (req, res) => {
     })
 }
 
-const handleGetOwnerId = async (req, res) => {
-    let data = await courseService.getOwnerCourse(req.query.id)
+const handleGetAllCourse = async (req, res) => {
+    req.body.userId = req.user.id
+    let data = await courseService.getAllCourse(req.body)
     return res.status(200).json({
         EC: data.EC,
         EM: data.EM,
@@ -273,16 +274,25 @@ const handleDeleteChapter = async (req, res) => {
     })
 }
 
+const handleGetUserCourse = async (req, res) => {
+    let data = await courseService.getUserCourse(req.user.id)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
 module.exports = {
     testApi,
     handleRegisterNewUser,
     handleLogin,
     handlegetUserAccount,
-    handlegetCourse,
+    handlegetCourseById,
     handleCreateRole,
     handleCreateGroupRole,
     handleCreateCourse,
-    handleGetOwnerId,
+    handleGetAllCourse,
     handleCreateBlog,
     handleCreateComment,
     handleGetBlog,
@@ -302,5 +312,6 @@ module.exports = {
     handleUpdateChapterPosition,
     handleGetChapter,
     handleUpdateChapter,
-    handleDeleteChapter
+    handleDeleteChapter,
+    handleGetUserCourse
 }

@@ -28,11 +28,12 @@ const initWebRoutes = (app) => {
 
     router.post("/create-grouprole", apiController.handleCreateGroupRole)
 
-    router.get("/course", apiController.handlegetCourse)
+    router.get("/course", apiController.handlegetCourseById)
     router.post("/create-course", apiController.handleCreateCourse)
-    router.get("/course-by-ownerid", apiController.handleGetOwnerId)
+    router.post("/teacher-course", apiController.handleGetAllCourse)
     router.post("/update-course", apiController.handleUpdateCourse)
     router.post("/delete-course", apiController.handleDeleteCourse)
+    router.get("/get-user-course", apiController.handleGetUserCourse)
 
     router.post("/create-blog", apiController.handleCreateBlog)
     router.post("/create-comment", apiController.handleCreateComment)

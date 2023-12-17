@@ -12,8 +12,11 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       User.belongsTo(models.Group)
-      User.belongsToMany(models.Course, { through: 'UserCourse', foreignKey: 'id' })
-      User.belongsToMany(models.Course, { through: 'Payment', foreignKey: 'id' })
+
+      User.belongsToMany(models.Course, { through: 'Purchase', foreignKey: 'userId' })
+
+      User.belongsToMany(models.Chapter, { through: 'Progress', foreignKey: 'userId' })
+
       User.hasMany(models.Blog, {
         foreignKey: 'id'
       })

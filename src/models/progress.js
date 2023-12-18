@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
-
+            Progress.belongsTo(models.Chapter)
         }
     }
     Progress.init({

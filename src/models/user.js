@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       User.belongsTo(models.Group)
 
-      User.belongsToMany(models.Course, { through: 'Purchase', foreignKey: 'userId' })
+      // User.hasMany(models.Course, { foreignKey: 'ownerId' })
 
       User.belongsToMany(models.Chapter, { through: 'Progress', foreignKey: 'userId' })
 

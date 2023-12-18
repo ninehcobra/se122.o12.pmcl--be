@@ -1,5 +1,8 @@
+import chapter from "../models/chapter";
 import db from "../models/index"
 import axios from "axios"
+const { Op } = require('sequelize');
+
 const cloudinary = require('cloudinary').v2
 
 cloudinary.config({
@@ -468,33 +471,188 @@ const getUserCourse = async (userId) => {
                 where: {
                     isPublished: true
                 },
+                order: [['createdAt', 'DESC']],
                 include: [
                     {
-                        model: db.User,
+                        model: db.Purchase,
                         where: {
-                            id: userId
+                            userId: userId
                         },
-                        attributes: []
+                        required: false,
+                    },
+                    {
+                        model: db.Category,
+                        attributes: ['id', 'name']
+                    },
+                    {
+                        model: db.Chapter,
+                        attributes: ['id']
                     }
-                ]
+                ],
             })
 
-            // for (const course of courses) {
-            //     if (course.dataValues.Users.length > 0) {
-            //         course.dataValues.Users.map((item) => {
-            //             if (item.dataValues.id === userId) {
-
-            //             }
-            //         })
-            //     }
-            // }
-            courses[0].dataValues.progress = '30%'
-            console.log(courses[0].dataValues)
+            const coursesWithProgress = await Promise.all(courses.map(async (course) => {
+                if (course.dataValues.Purchases.length === 0) {
+                    let item = course.dataValues;
+                    item.progress = null;
+                    return item;
+                } else {
+                    const progressPercent = await getProgress(userId, course.dataValues.id);
+                    let item = course.dataValues;
+                    item.progress = progressPercent;
+                    return item;
+                }
+            }));
 
             return {
                 EC: 0,
                 EM: 'success',
-                DT: courses
+                DT: coursesWithProgress
+            }
+        }
+        else {
+            return {
+                EC: -2,
+                EM: 'Missing parameters'
+            }
+        }
+    } catch (error) {
+        return {
+            EC: -1,
+            EM: 'Something wrong on server'
+        }
+    }
+}
+
+const getUserListChapter = async (data) => {
+    try {
+        if (data && data.courseId && data.userId) {
+            let res = await db.Course.findOne({
+                where: {
+                    id: data.courseId
+                },
+                order: [[{ model: db.Chapter }, 'position', 'ASC']],
+
+                include: [{
+                    model: db.Chapter,
+                    where: {
+                        isPublished: true
+                    },
+                    include: {
+                        model: db.Progress,
+                        where: {
+                            userId: data.userId
+                        },
+                        required: false
+                    }
+                }
+                ]
+            })
+
+            let userInfo = await db.User.findOne({
+                where: {
+                    id: res.dataValues.ownerId
+                },
+                attributes: ['id', 'name']
+            })
+
+            res.dataValues.User = userInfo.dataValues
+            console.log(userInfo)
+            return {
+                EC: 0,
+                EM: 'Get list Chapter success',
+                DT: res
+            }
+        }
+        else {
+            return {
+                EC: -2,
+                EM: 'Missing parameters'
+            }
+        }
+    } catch (error) {
+        return {
+            EC: -1,
+            EM: 'Something wrong on server'
+        }
+    }
+}
+
+const getProgress = async (userId, courseId) => {
+    try {
+        let publishedChapters = await db.Chapter.findAll({
+            where: {
+                courseId: courseId,
+                isPublished: true
+            }
+        })
+
+        let publishedChapterIds = publishedChapters.map((chapter) => chapter.dataValues.id)
+
+        const validCompletedChapters = await db.Progress.count(
+            {
+                where: {
+                    userId: userId,
+                    chapterId: {
+                        [Op.in]: publishedChapterIds
+                    },
+                    isCompleted: true
+                }
+            }
+        )
+
+        const progressPercentage = (validCompletedChapters / publishedChapterIds.length) * 100;
+        return progressPercentage
+    } catch (error) {
+        console.log('Get progress error:', error)
+
+    }
+}
+
+const getUserPurchase = async (data) => {
+    try {
+        if (data && data.courseId && data.userId) {
+            let res = await db.Purchase.findOne({
+                where: {
+                    courseId: data.courseId,
+                    userId: data.userId
+                }
+            })
+
+            return {
+                EC: 0,
+                EM: 'Get purchase success',
+                DT: res
+            }
+        }
+        else {
+            return {
+                EC: -2,
+                EM: 'Missing parameters'
+            }
+        }
+    } catch (error) {
+        return {
+            EC: -1,
+            EM: 'Something wrong on server'
+        }
+    }
+}
+
+const getChapterDetail = async (id) => {
+    try {
+        if (id) {
+            let res = await db.Chapter.findOne({
+                where: {
+                    id: id,
+                    isPublished: true
+                }
+            })
+
+            return {
+                EC: 0,
+                EM: 'success',
+                DT: res
             }
         }
         else {
@@ -522,5 +680,8 @@ module.exports = {
     getChapter,
     updateChapter,
     deleteChapter,
-    getUserCourse
+    getUserCourse,
+    getUserListChapter,
+    getUserPurchase,
+    getChapterDetail
 }

@@ -283,6 +283,40 @@ const handleGetUserCourse = async (req, res) => {
     })
 }
 
+const handleGetUserListChapter = async (req, res) => {
+    let data = await courseService.getUserListChapter({
+        userId: req.user.id,
+        courseId: req.body.id
+    })
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleGetUserPurchase = async (req, res) => {
+    let data = await courseService.getUserPurchase({
+        userId: req.user.id,
+        courseId: req.body.id
+    })
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleGetChapterDetail = async (req, res) => {
+    let data = await courseService.getChapterDetail(req.query.id)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+
 module.exports = {
     testApi,
     handleRegisterNewUser,
@@ -313,5 +347,8 @@ module.exports = {
     handleGetChapter,
     handleUpdateChapter,
     handleDeleteChapter,
-    handleGetUserCourse
+    handleGetUserCourse,
+    handleGetUserListChapter,
+    handleGetUserPurchase,
+    handleGetChapterDetail
 }

@@ -464,32 +464,70 @@ const deleteImgByUrl = async (imgUrl) => {
     })
 };
 
-const getUserCourse = async (userId) => {
+const getUserCourse = async (userId, categoryId) => {
     try {
         if (userId) {
-            const courses = await db.Course.findAll({
-                where: {
-                    isPublished: true
-                },
-                order: [['createdAt', 'DESC']],
-                include: [
-                    {
-                        model: db.Purchase,
-                        where: {
-                            userId: userId
+            let courses = null
+            console.log(categoryId)
+            if (categoryId) {
+                courses = await db.Course.findAll({
+                    where: {
+                        isPublished: true,
+                        categoryId: categoryId
+                    },
+                    order: [['createdAt', 'DESC']],
+                    include: [
+                        {
+                            model: db.Purchase,
+                            where: {
+                                userId: userId
+                            },
+                            required: false,
                         },
-                        required: false,
+                        {
+                            model: db.Category,
+                            attributes: ['id', 'name']
+                        },
+                        {
+                            model: db.Chapter,
+                            where: {
+                                isPublished: true
+                            },
+                            attributes: ['id']
+                        }
+                    ],
+                })
+            }
+            else {
+                courses = await db.Course.findAll({
+                    where: {
+                        isPublished: true,
+
                     },
-                    {
-                        model: db.Category,
-                        attributes: ['id', 'name']
-                    },
-                    {
-                        model: db.Chapter,
-                        attributes: ['id']
-                    }
-                ],
-            })
+                    order: [['createdAt', 'DESC']],
+                    include: [
+                        {
+                            model: db.Purchase,
+                            where: {
+                                userId: userId
+                            },
+                            required: false,
+                        },
+                        {
+                            model: db.Category,
+                            attributes: ['id', 'name']
+                        },
+                        {
+                            model: db.Chapter,
+                            where: {
+                                isPublished: true
+                            },
+                            attributes: ['id']
+                        }
+                    ],
+                })
+            }
+
 
             const coursesWithProgress = await Promise.all(courses.map(async (course) => {
                 if (course.dataValues.Purchases.length === 0) {
@@ -545,7 +583,14 @@ const getUserListChapter = async (data) => {
                         },
                         required: false
                     }
-                }
+                },
+                {
+                    model: db.Purchase,
+                    where: {
+                        userId: data.userId
+                    },
+                    required: false,
+                },
                 ]
             })
 
@@ -555,6 +600,12 @@ const getUserListChapter = async (data) => {
                 },
                 attributes: ['id', 'name']
             })
+
+            if (res.dataValues.Purchases.length > 0) {
+                let progressPercent = await getProgress(data.userId, res.dataValues.id)
+                res.dataValues.progress = progressPercent
+            }
+
 
             res.dataValues.User = userInfo.dataValues
             console.log(userInfo)
@@ -589,6 +640,7 @@ const getProgress = async (userId, courseId) => {
 
         let publishedChapterIds = publishedChapters.map((chapter) => chapter.dataValues.id)
 
+
         const validCompletedChapters = await db.Progress.count(
             {
                 where: {
@@ -600,6 +652,8 @@ const getProgress = async (userId, courseId) => {
                 }
             }
         )
+
+        console.log()
 
         const progressPercentage = (validCompletedChapters / publishedChapterIds.length) * 100;
         return progressPercentage
@@ -639,13 +693,20 @@ const getUserPurchase = async (data) => {
     }
 }
 
-const getChapterDetail = async (id) => {
+const getChapterDetail = async (data) => {
     try {
-        if (id) {
+        if (data.courseId) {
             let res = await db.Chapter.findOne({
                 where: {
-                    id: id,
+                    id: data.courseId,
                     isPublished: true
+                },
+                include: {
+                    model: db.Progress,
+                    where: {
+                        userId: data.userId,
+                    },
+                    required: false
                 }
             })
 
@@ -669,6 +730,86 @@ const getChapterDetail = async (id) => {
     }
 }
 
+const purchaseCourse = async (data) => {
+    try {
+
+        if (data.userId && data.courseId) {
+            let res = await db.Purchase.create({
+                userId: data.userId,
+                courseId: data.courseId
+            })
+
+            return {
+                EC: 0,
+                EM: 'Purchase success',
+                DT: res
+            }
+        }
+        else {
+            return {
+                EC: -2,
+                EM: 'Missing parameters'
+            }
+        }
+    } catch (error) {
+        return {
+            EC: -1,
+            EM: 'Something wrong on server'
+        }
+    }
+}
+
+const markCompleteChapter = async (data) => {
+    try {
+        console.log(data.chapterId)
+
+
+
+        if (data.userId && data.chapterId) {
+            let check = await db.Progress.findOne({
+                where: {
+                    userId: data.userId,
+                    ChapterId: data.chapterId,
+                    isCompleted: true
+                }
+            })
+            if (check) {
+                return {
+                    EC: 1,
+                    EM: 'You already done this',
+                }
+            }
+            let res = await db.Progress.create({
+                userId: data.userId,
+                ChapterId: data.chapterId,
+                isCompleted: true
+            })
+
+            return {
+                EC: 0,
+                EM: 'Mark success',
+                DT: res
+            }
+        }
+        else {
+            return {
+                EC: -2,
+                EM: 'Missing parameters'
+            }
+        }
+    } catch (error) {
+        return {
+            EC: -1,
+            EM: 'Something wrong on server',
+            DT: error
+        }
+    }
+}
+
+const getDashBoardCourses = async (id) => {
+
+}
+
 module.exports = {
     getCourseById,
     createCourse,
@@ -683,5 +824,7 @@ module.exports = {
     getUserCourse,
     getUserListChapter,
     getUserPurchase,
-    getChapterDetail
+    getChapterDetail,
+    purchaseCourse,
+    markCompleteChapter
 }

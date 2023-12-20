@@ -33,10 +33,12 @@ const initWebRoutes = (app) => {
     router.post("/teacher-course", apiController.handleGetAllCourse)
     router.post("/update-course", apiController.handleUpdateCourse)
     router.post("/delete-course", apiController.handleDeleteCourse)
-    router.get("/get-user-course", apiController.handleGetUserCourse)
+    router.post("/get-user-course", apiController.handleGetUserCourse)
     router.post("/get-user-list-chapter", apiController.handleGetUserListChapter)
     router.post("/get-user-purchase", apiController.handleGetUserPurchase)
     router.get("/get-chapter-detail", apiController.handleGetChapterDetail)
+    router.post("/purchase", apiController.handlePurchaseCourse)
+    router.post("/mark-complete", apiController.handleMarkCompleteChapter)
 
     router.post("/create-blog", apiController.handleCreateBlog)
     router.post("/create-comment", apiController.handleCreateComment)

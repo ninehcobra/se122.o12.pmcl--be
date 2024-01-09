@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
 
             Course.hasMany(models.Purchase, { foreignKey: 'courseId' })
 
-            Course.belongsTo(models.Category)
+            Course.belongsTo(models.Category, { foreignKey: 'categoryId' })
 
             Course.hasMany(models.Chapter, { foreignKey: 'courseId' })
 

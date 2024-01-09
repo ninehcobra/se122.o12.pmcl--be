@@ -276,7 +276,7 @@ const handleDeleteChapter = async (req, res) => {
 
 const handleGetUserCourse = async (req, res) => {
     console.log(req.body)
-    let data = await courseService.getUserCourse(req.user.id, req.body.categoryId)
+    let data = await courseService.getUserCourse(req.user.id, req.body.categoryId, req.body.page, req.body.limit, req.body.search)
     return res.status(200).json({
         EC: data.EC,
         EM: data.EM,
@@ -340,6 +340,28 @@ const handleMarkCompleteChapter = async (req, res) => {
     })
 }
 
+const handleGetDashboardCourses = async (req, res) => {
+    let data = await courseService.getDashboardCourses({
+        userId: req.user.id
+    })
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
+const handleGetAnalytics = async (req, res) => {
+    let data = await courseService.getAnalytics({
+        userId: req.user.id
+    })
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
 module.exports = {
     testApi,
     handleRegisterNewUser,
@@ -375,5 +397,7 @@ module.exports = {
     handleGetUserPurchase,
     handleGetChapterDetail,
     handlePurchaseCourse,
-    handleMarkCompleteChapter
+    handleMarkCompleteChapter,
+    handleGetDashboardCourses,
+    handleGetAnalytics
 }

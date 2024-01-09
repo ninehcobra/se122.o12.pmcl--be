@@ -44,7 +44,7 @@ const createCourse = async (data) => {
 
 const getCourseById = async (courseId, userId) => {
     try {
-
+        console.log(courseId, userId)
         let course = null
         if (courseId) {
             course = await db.Course.findOne(
@@ -52,22 +52,31 @@ const getCourseById = async (courseId, userId) => {
                     where: {
                         id: courseId
                     },
-                    order: [[{ model: db.Chapter }, 'position', 'ASC']]
-                    ,
+                    order: [[{ model: db.Chapter }, 'position', 'ASC']],
+
                     include: [{
-                        model: db.User,
-                        attributes: ['id'],
-                        through: { attributes: [] }
+                        model: db.Chapter
                     },
                     {
                         model: db.Category,
                         attributes: ['name']
-                    }
-                        ,
-                    {
-                        model: db.Chapter
-                    }
-                    ]
+                    }]
+                    // order: [[{ model: db.Chapter }, 'position', 'ASC']]
+                    // ,
+                    // include: [{
+                    //     model: db.User,
+                    //     attributes: ['id'],
+                    //     through: { attributes: [] }
+                    // },
+                    // {
+                    //     model: db.Category,
+                    //     attributes: ['name']
+                    // }
+                    //     ,
+                    // {
+                    //     model: db.Chapter
+                    // }
+                    // ]
                 }
             )
             if (course.ownerId !== userId) {
@@ -464,103 +473,105 @@ const deleteImgByUrl = async (imgUrl) => {
     })
 };
 
-const getUserCourse = async (userId, categoryId) => {
+const getUserCourse = async (userId, categoryId, page, limit, searchQuery) => {
     try {
-        if (userId) {
-            let courses = null
-            console.log(categoryId)
-            if (categoryId) {
-                courses = await db.Course.findAll({
-                    where: {
-                        isPublished: true,
-                        categoryId: categoryId
-                    },
-                    order: [['createdAt', 'DESC']],
-                    include: [
-                        {
-                            model: db.Purchase,
-                            where: {
-                                userId: userId
-                            },
-                            required: false,
-                        },
-                        {
-                            model: db.Category,
-                            attributes: ['id', 'name']
-                        },
-                        {
-                            model: db.Chapter,
-                            where: {
-                                isPublished: true
-                            },
-                            attributes: ['id']
-                        }
-                    ],
-                })
-            }
-            else {
-                courses = await db.Course.findAll({
-                    where: {
-                        isPublished: true,
-
-                    },
-                    order: [['createdAt', 'DESC']],
-                    include: [
-                        {
-                            model: db.Purchase,
-                            where: {
-                                userId: userId
-                            },
-                            required: false,
-                        },
-                        {
-                            model: db.Category,
-                            attributes: ['id', 'name']
-                        },
-                        {
-                            model: db.Chapter,
-                            where: {
-                                isPublished: true
-                            },
-                            attributes: ['id']
-                        }
-                    ],
-                })
-            }
-
-
-            const coursesWithProgress = await Promise.all(courses.map(async (course) => {
-                if (course.dataValues.Purchases.length === 0) {
-                    let item = course.dataValues;
-                    item.progress = null;
-                    return item;
-                } else {
-                    const progressPercent = await getProgress(userId, course.dataValues.id);
-                    let item = course.dataValues;
-                    item.progress = progressPercent;
-                    return item;
-                }
-            }));
-
-            return {
-                EC: 0,
-                EM: 'success',
-                DT: coursesWithProgress
-            }
-        }
-        else {
+        console.log(searchQuery)
+        // Kiểm tra userId
+        if (!userId) {
             return {
                 EC: -2,
-                EM: 'Missing parameters'
-            }
+                EM: 'Missing userId parameter'
+            };
         }
+
+        // Chuyển đổi page và limit thành số nguyên
+        page = parseInt(page);
+        limit = parseInt(limit);
+
+        // Tính toán offset
+        const offset = (page - 1) * limit;
+
+        // Xây dựng điều kiện where chung
+        const commonWhereClause = {
+            isPublished: true,
+        };
+
+        // Thêm điều kiện tìm kiếm theo tên
+        if (searchQuery) {
+            commonWhereClause.title = {
+                [Op.like]: `%${searchQuery}%`,
+            };
+        }
+
+        // Thêm điều kiện categoryId nếu có
+        if (categoryId) {
+            commonWhereClause.categoryId = categoryId;
+        }
+
+        // Tìm và đếm các khóa học
+        const { count, rows } = await db.Course.findAndCountAll({
+            where: commonWhereClause,
+            order: [['createdAt', 'DESC']],
+            include: [
+                {
+                    model: db.Purchase,
+                    where: { userId: userId },
+                    required: false,
+                },
+                {
+                    model: db.Category,
+                    attributes: ['id', 'name'],
+                },
+                {
+                    model: db.Chapter,
+                    where: { isPublished: true },
+                    attributes: ['id'],
+                },
+            ],
+            offset: offset,
+            limit: limit,
+        });
+
+        // Lấy danh sách khóa học và tổng số lượng
+        const courses = rows;
+        const totalCount = count;
+
+        // Tính toán tiến trình và gán vào mỗi khóa học
+        const coursesWithProgress = await Promise.all(
+            courses.map(async (course) => {
+                const progressPercent =
+                    course.dataValues.Purchases.length === 0
+                        ? null
+                        : await getProgress(userId, course.dataValues.id);
+                return {
+                    ...course.dataValues,
+                    progress: progressPercent,
+                };
+            })
+        );
+
+        // Trả về kết quả
+        return {
+            EC: 0,
+            EM: 'success',
+            DT: {
+                totalRows: totalCount,
+                totalPages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                pageSize: limit,
+                products: coursesWithProgress,
+            },
+        };
     } catch (error) {
+        // Xử lý lỗi
         return {
             EC: -1,
-            EM: 'Something wrong on server'
-        }
+            EM: 'Something wrong on server',
+            DT: error
+        };
     }
-}
+};
+
 
 const getUserListChapter = async (data) => {
     try {
@@ -806,8 +817,106 @@ const markCompleteChapter = async (data) => {
     }
 }
 
-const getDashBoardCourses = async (id) => {
+const getDashboardCourses = async (data) => {
+    try {
+        if (data && data.userId) {
+            const purchasedCourses = await db.Purchase.findAll({
+                where: {
+                    userId: data.userId,
+                },
+                include: {
+                    model: db.Course,
+                    include: [
+                        {
+                            model: db.Category,
+                        },
+                        {
+                            model: db.Chapter,
+                            where: {
+                                isPublished: true,
+                            },
+                        },
+                    ],
+                },
+            });
 
+            const courses = purchasedCourses.map((purchase) => purchase.dataValues.Course)
+
+            for (let course of courses) {
+                const progress = await getProgress(data.userId, course.dataValues.id);
+                course.dataValues["progress"] = progress;
+            }
+
+            const completedCourses = courses.filter((course) => course.dataValues.progress === 100);
+            const coursesInProgress = courses.filter((course) => (course.dataValues.progress ?? 0) < 100);
+
+            return {
+                EC: 0,
+                EM: 'Get success',
+                DT: {
+                    coursesInProgress,
+                    completedCourses
+                }
+            }
+        }
+        else {
+            return {
+                EC: -2,
+                EM: 'Missing parameters',
+
+            }
+        }
+    } catch (error) {
+        return {
+            EC: -1,
+            EM: 'Something wrong on server',
+            DT: error
+        }
+    }
+}
+
+const getAnalytics = async (data) => {
+    try {
+
+        const courses = await db.Course.findAll({
+            where: {
+                ownerId: data.userId,
+                isPublished: true
+            },
+            include: {
+                model: db.Purchase
+            }
+        })
+
+        const purchaseStats = []
+
+        courses.forEach(course => {
+            const purchases = course.Purchases || []; // Lấy mảng Purchases hoặc mảng rỗng nếu không có
+            const totalPurchases = purchases.length; // Đếm số lượng lượt mua
+
+            // Tính tổng tiền bằng cách nhân giá mới của khóa và số lượng lượt mua
+            const totalAmount = course.newPrice * totalPurchases;
+            console.log(course.title)
+            // Lưu thông tin vào mảng purchaseStatsArray
+            purchaseStats.push({
+                title: course.title,
+                totalPurchases,
+                totalAmount
+            });
+        });
+
+        return {
+            EC: 0,
+            EM: 'Success',
+            DT: purchaseStats
+        }
+    } catch (error) {
+        return {
+            EC: -1,
+            EM: 'Something wrong on server',
+            DT: error
+        }
+    }
 }
 
 module.exports = {
@@ -826,5 +935,7 @@ module.exports = {
     getUserPurchase,
     getChapterDetail,
     purchaseCourse,
-    markCompleteChapter
+    markCompleteChapter,
+    getDashboardCourses,
+    getAnalytics
 }

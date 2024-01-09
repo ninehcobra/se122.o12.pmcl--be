@@ -19,7 +19,6 @@ module.exports = (sequelize, DataTypes) => {
                 }
             })
             Blog.belongsTo(models.User, { foreignKey: 'ownerId' })
-            Blog.belongsToMany(models.Topic, { through: 'BlogTopic' })
         }
     }
     Blog.init({

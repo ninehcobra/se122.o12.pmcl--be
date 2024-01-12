@@ -1,10 +1,9 @@
 'use strict';
 const {
-    Model
+    Model, DATEONLY
 } = require('sequelize');
-const group = require('./group');
 module.exports = (sequelize, DataTypes) => {
-    class BlogTopic extends Model {
+    class QuizQuestion extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
@@ -12,15 +11,16 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
-
+            QuizQuestion.belongsTo(models.QuizzesLesson, { foreignKey: 'quizzesLessonId' });
+            QuizQuestion.hasMany(models.QuizOption, { foreignKey: 'quizQuestionId' });
         }
     }
-    BlogTopic.init({
-        blogId: DataTypes.INTEGER,
-        topicId: DataTypes.INTEGER,
+    QuizQuestion.init({
+        content: DataTypes.TEXT, // Nội dung của câu hỏi
+        quizzesLessonId: DataTypes.INTEGER
     }, {
         sequelize,
-        modelName: 'BlogTopic',
+        modelName: 'QuizQuestion',
     });
-    return BlogTopic;
+    return QuizQuestion;
 };

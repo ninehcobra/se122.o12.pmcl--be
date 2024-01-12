@@ -11,14 +11,17 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
-
-
+            Lesson.belongsTo(models.Chapter, { foreignKey: 'chapterId' });
+            Lesson.hasOne(models.ReadingLesson, { foreignKey: 'lessonId' });
+            Lesson.hasOne(models.QuizzesLesson, { foreignKey: 'lessonId' });
+            Lesson.hasOne(models.VideoLesson, { foreignKey: 'lessonId' });
         }
     }
     Lesson.init({
         title: DataTypes.STRING,
-        description: DataTypes.STRING,
-        video: DataTypes.STRING,
+        lessonType: DataTypes.STRING, // Loại bài học (video, reading, quizzes)
+        duration: DataTypes.INTEGER, // Thời gian hoàn thành bài học
+        ChapterId: DataTypes.INTEGER,
     }, {
         sequelize,
         modelName: 'Lesson',

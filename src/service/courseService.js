@@ -55,28 +55,32 @@ const getCourseById = async (courseId, userId) => {
                     order: [[{ model: db.Chapter }, 'position', 'ASC']],
 
                     include: [{
-                        model: db.Chapter
+                        model: db.Chapter,
+                        include: [
+                            {
+                                model: db.Lesson,// Thêm include cho bài học trong mỗi chương
+                                include: [
+                                    {
+                                        model: db.VideoLesson,
+                                        required: false,
+                                    },
+                                    {
+                                        model: db.ReadingLesson,
+                                        required: false,
+                                    },
+                                    {
+                                        model: db.QuizzesLesson,
+                                        required: false,
+                                    },
+                                ],
+                            }
+                        ],
                     },
                     {
                         model: db.Category,
                         attributes: ['name']
                     }]
-                    // order: [[{ model: db.Chapter }, 'position', 'ASC']]
-                    // ,
-                    // include: [{
-                    //     model: db.User,
-                    //     attributes: ['id'],
-                    //     through: { attributes: [] }
-                    // },
-                    // {
-                    //     model: db.Category,
-                    //     attributes: ['name']
-                    // }
-                    //     ,
-                    // {
-                    //     model: db.Chapter
-                    // }
-                    // ]
+
                 }
             )
             if (course.ownerId !== userId) {
@@ -102,7 +106,8 @@ const getCourseById = async (courseId, userId) => {
     } catch (error) {
         return {
             EC: -1,
-            EM: 'Something wrong on server'
+            EM: 'Something wrong on server',
+            DT: error
         }
     }
 }
@@ -252,13 +257,14 @@ const createChapter = async (data) => {
 
             let position = lastChapter ? lastChapter.position + 1 : 0
 
-            await db.Chapter.create({
+            const newChapter = await db.Chapter.create({
                 title: data.title,
                 courseId: data.courseId,
                 position: position,
                 isPublished: false,
                 isFree: false
             })
+
             return {
                 EC: 0,
                 EM: 'Create chapter success'
@@ -277,6 +283,75 @@ const createChapter = async (data) => {
         }
     }
 }
+
+
+// lesson
+
+const createVideoLesson = async (data) => {
+    try {
+        const videoLesson = await db.VideoLesson.create({
+            videoUrl: data
+        });
+        return videoLesson;
+    } catch (error) {
+        console.error('Error creating video lesson:', error);
+        throw error;
+    }
+};
+
+const createReadingLesson = async (data) => {
+    try {
+        const readingLesson = await db.ReadingLesson.create({
+            content: data
+        });
+        return readingLesson;
+    } catch (error) {
+        console.error('Error creating reading lesson:', error);
+        throw error;
+    }
+};
+
+const createQuizzesLesson = async (data) => {
+    try {
+        const quizzesLesson = await db.QuizzesLesson.create(data.quizzesDetails);
+        return quizzesLesson;
+    } catch (error) {
+        console.error('Error creating quizzes lesson:', error);
+        throw error;
+    }
+};
+
+const createLesson = async (lessonData, lessonDetails) => {
+    try {
+        const lesson = await db.Lesson.create(lessonData);
+        switch (lessonData.lessonType) {
+            case 'video':
+
+                const videoLesson = await createVideoLesson(lessonDetails);
+                await lesson.setVideoLesson(videoLesson);
+                break;
+            case 'reading':
+                const readingLesson = await createReadingLesson(lessonDetails);
+                await lesson.setReadingLesson(readingLesson);
+                break;
+            case 'quizzes':
+                const quizzesLesson = await createQuizzesLesson(lessonDetails);
+                await lesson.setQuizzesLesson(quizzesLesson);
+                break;
+            // Các trường hợp khác nếu có
+            default:
+                break;
+        }
+
+        return lesson;
+    } catch (error) {
+        console.error('Error creating lesson:', error);
+        throw error;
+    }
+};
+// 
+
+
 
 const updateChapterPosition = async (data) => {
 
@@ -937,5 +1012,6 @@ module.exports = {
     purchaseCourse,
     markCompleteChapter,
     getDashboardCourses,
-    getAnalytics
+    getAnalytics,
+    createLesson
 }

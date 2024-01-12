@@ -3,7 +3,7 @@ const {
     Model, DATEONLY
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-    class Chapter extends Model {
+    class QuizOption extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
@@ -11,20 +11,16 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
-            Chapter.belongsTo(models.Course);
-            Chapter.hasMany(models.Lesson, { foreignKey: 'chapterId' });
+            QuizOption.belongsTo(models.QuizQuestion, { foreignKey: 'quizQuestionId' });
         }
     }
-    Chapter.init({
-        title: DataTypes.STRING,
-        courseId: DataTypes.INTEGER,
-        position: DataTypes.INTEGER,
-        isPublished: DataTypes.BOOLEAN,
-        isFree: DataTypes.BOOLEAN,
-        description: DataTypes.STRING,
+    QuizOption.init({
+        content: DataTypes.TEXT, // Nội dung của lựa chọn đáp án
+        isCorrect: DataTypes.BOOLEAN, // Xác định liệu lựa chọn này có phải là đáp án đúng hay không
+        quizQuestionId: DataTypes.INTEGER
     }, {
         sequelize,
-        modelName: 'Chapter',
+        modelName: 'QuizOption',
     });
-    return Chapter;
+    return QuizOption;
 };

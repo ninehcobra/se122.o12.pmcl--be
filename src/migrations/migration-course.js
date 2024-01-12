@@ -37,10 +37,8 @@ module.exports = {
             categoryId: {
                 type: Sequelize.INTEGER
             },
-
-            attachments: {
-                type: Sequelize.JSON
-            },
+            overview: { type: Sequelize.STRING }, // Mô tả tổng quan về khóa học
+            learningObjectives: { type: Sequelize.STRING }, // Mục tiêu học tập
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE

@@ -1,10 +1,9 @@
 'use strict';
 const {
-    Model
+    Model, DATEONLY
 } = require('sequelize');
-const group = require('./group');
 module.exports = (sequelize, DataTypes) => {
-    class Topic extends Model {
+    class ReadingLesson extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
@@ -12,15 +11,15 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
-            Topic.belongsToMany(models.Blog, { through: 'BlogTopic' })
+            ReadingLesson.belongsTo(models.Lesson, { foreignKey: 'lessonId', onDelete: 'CASCADE' });
         }
     }
-    Topic.init({
-        type: DataTypes.STRING,
-        description: DataTypes.STRING,
+    ReadingLesson.init({
+        content: DataTypes.TEXT, // Thêm trường nội dung cho reading chapter
+        lessonId: DataTypes.INTEGER, // Thêm trường lessonId cho reading chapter
     }, {
         sequelize,
-        modelName: 'Topic',
+        modelName: 'ReadingLesson',
     });
-    return Topic;
+    return ReadingLesson;
 };

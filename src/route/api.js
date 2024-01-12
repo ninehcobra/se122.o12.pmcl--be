@@ -11,7 +11,7 @@ const router = express.Router()
 
 
 const initWebRoutes = (app) => {
-    router.all('*', checkUserJWT, checkUserPermission)
+    router.all('*', checkUserJWT)
     router.get("/", (req, res) => {
         return res.send('api ne')
     })
@@ -61,6 +61,8 @@ const initWebRoutes = (app) => {
 
     router.post("/create-category", apiController.handleCreateCategory)
     router.get("/get-category", apiController.handleGetCategory)
+
+    router.post("/create-lesson", apiController.handleCreateLesson)
 
     router.get("/test-api", apiController.testApi)
 

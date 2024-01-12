@@ -362,6 +362,15 @@ const handleGetAnalytics = async (req, res) => {
     })
 }
 
+const handleCreateLesson = async (req, res) => {
+    let data = await courseService.createLesson(req.body, req.body.detail)
+    return res.status(200).json({
+        EC: data.EC,
+        EM: data.EM,
+        DT: data.DT
+    })
+}
+
 module.exports = {
     testApi,
     handleRegisterNewUser,
@@ -399,5 +408,6 @@ module.exports = {
     handlePurchaseCourse,
     handleMarkCompleteChapter,
     handleGetDashboardCourses,
-    handleGetAnalytics
+    handleGetAnalytics,
+    handleCreateLesson
 }

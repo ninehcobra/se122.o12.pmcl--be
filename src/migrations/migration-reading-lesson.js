@@ -2,19 +2,15 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Chapter', {
+    await queryInterface.createTable('ReadingLesson', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      title: { type: Sequelize.STRING },
-      description: { type: Sequelize.STRING },
-      position: { type: Sequelize.INTEGER },
-      isPublished: { type: Sequelize.BOOLEAN },
-      isFree: { type: Sequelize.BOOLEAN },
-      courseId: { type: Sequelize.INTEGER },
+      content: { type: Sequelize.TEXT },
+      lessonId: { type: Sequelize.INTEGER },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -26,6 +22,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Chapter');
+    await queryInterface.dropTable('ReadingLesson');
   }
 };

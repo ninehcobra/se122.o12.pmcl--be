@@ -1,41 +1,28 @@
+// models/course.js
+
 'use strict';
-const {
-    Model
-} = require('sequelize');
+const { Model } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
     class Course extends Model {
-        /**
-         * Helper method for defining associations.
-         * This method is not a part of Sequelize lifecycle.
-         * The `models/index` file will call this method automatically.
-         */
         static associate(models) {
-            // define association here
-
-            Course.hasMany(models.Purchase, { foreignKey: 'courseId' })
-
-            Course.belongsTo(models.Category, { foreignKey: 'categoryId' })
-
-            Course.hasMany(models.Chapter, { foreignKey: 'courseId' })
-
-            // Course.belongsTo(models.User)
+            Course.hasMany(models.Purchase, { foreignKey: 'courseId' });
+            Course.belongsTo(models.Category, { foreignKey: 'categoryId' });
+            Course.hasMany(models.Chapter, { foreignKey: 'courseId' });
+            Course.hasMany(models.Review, { foreignKey: 'courseId' });
         }
     }
     Course.init({
         title: DataTypes.STRING,
         description: DataTypes.STRING,
         ownerId: DataTypes.INTEGER,
-
         isPublished: DataTypes.BOOLEAN,
-
         newPrice: DataTypes.INTEGER,
         oldPrice: DataTypes.INTEGER,
-
         thumbnail: DataTypes.STRING,
-
         categoryId: DataTypes.INTEGER,
-
-        attachments: DataTypes.JSON
+        overview: DataTypes.STRING, // Mô tả tổng quan về khóa học
+        learningObjectives: DataTypes.STRING, // Mục tiêu học tập
     }, {
         sequelize,
         modelName: 'Course',

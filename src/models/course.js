@@ -21,8 +21,8 @@ module.exports = (sequelize, DataTypes) => {
         oldPrice: DataTypes.INTEGER,
         thumbnail: DataTypes.STRING,
         categoryId: DataTypes.INTEGER,
-        overview: DataTypes.STRING, // Mô tả tổng quan về khóa học
-        learningObjectives: DataTypes.STRING, // Mục tiêu học tập
+        overview: DataTypes.JSON, // Mô tả tổng quan về khóa học
+        learningObjectives: DataTypes.JSON, // Mục tiêu học tập
     }, {
         sequelize,
         modelName: 'Course',

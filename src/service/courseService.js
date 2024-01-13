@@ -323,30 +323,44 @@ const createQuizzesLesson = async (data) => {
 
 const createLesson = async (lessonData, lessonDetails) => {
     try {
-        const lesson = await db.Lesson.create(lessonData);
-        switch (lessonData.lessonType) {
-            case 'video':
+        if (lessonData && lessonData.title && lessonData.duration && lessonData.ChapterId) {
+            const lesson = await db.Lesson.create(lessonData);
+            switch (lessonData.lessonType) {
+                case 'video':
 
-                const videoLesson = await createVideoLesson(lessonDetails);
-                await lesson.setVideoLesson(videoLesson);
-                break;
-            case 'reading':
-                const readingLesson = await createReadingLesson(lessonDetails);
-                await lesson.setReadingLesson(readingLesson);
-                break;
-            case 'quizzes':
-                const quizzesLesson = await createQuizzesLesson(lessonDetails);
-                await lesson.setQuizzesLesson(quizzesLesson);
-                break;
-            // Các trường hợp khác nếu có
-            default:
-                break;
+                    const videoLesson = await createVideoLesson(lessonDetails);
+                    await lesson.setVideoLesson(videoLesson);
+                    break;
+                case 'reading':
+                    const readingLesson = await createReadingLesson(lessonDetails);
+                    await lesson.setReadingLesson(readingLesson);
+                    break;
+                case 'quizzes':
+                    const quizzesLesson = await createQuizzesLesson(lessonDetails);
+                    await lesson.setQuizzesLesson(quizzesLesson);
+                    break;
+                // Các trường hợp khác nếu có
+                default:
+                    break;
+            }
+
+            return {
+                EC: 0,
+                EM: 'Create lesson success'
+            }
         }
-
-        return lesson;
+        else {
+            return {
+                EC: -2,
+                EM: 'Missing parameters'
+            }
+        }
     } catch (error) {
-        console.error('Error creating lesson:', error);
-        throw error;
+        return {
+            EC: -1,
+            EM: 'Create lesson fail',
+            DT: error
+        }
     }
 };
 // 

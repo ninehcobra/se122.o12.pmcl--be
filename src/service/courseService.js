@@ -216,7 +216,7 @@ const updateCourse = async (data) => {
                 newPrice: course.newPrice,
                 isPublished: course.isPublished,
                 updatedAt: new Date(),
-
+                overview: course.overview
             }, {
                 where: {
                     id: course.id

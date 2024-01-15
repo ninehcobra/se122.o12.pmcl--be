@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
-            VideoLesson.belongsTo(models.Lesson, { foreignKey: 'lessonId', onDelete: 'CASCADE' });
+            VideoLesson.belongsTo(models.Lesson, { foreignKey: 'lessonId' });
         }
     }
     VideoLesson.init({

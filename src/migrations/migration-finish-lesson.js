@@ -2,16 +2,16 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('QuizOption', {
+    await queryInterface.createTable('FinishLesson', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      content: { type: Sequelize.TEXT }, // Nội dung của lựa chọn đáp án
-      isCorrect: { type: Sequelize.BOOLEAN },
-      quizQuestionId: { type: Sequelize.INTEGER },
+      userId: { type: Sequelize.INTEGER },
+      lessonId: { type: Sequelize.INTEGER },
+      isCompleted: { type: Sequelize.BOOLEAN },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -23,6 +23,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('QuizOption');
+    await queryInterface.dropTable('FinishLesson');
   }
 };

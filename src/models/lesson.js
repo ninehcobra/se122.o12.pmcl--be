@@ -11,10 +11,12 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
-            Lesson.belongsTo(models.Chapter, { foreignKey: 'chapterId' });
+            Lesson.belongsTo(models.Chapter, { foreignKey: 'ChapterId' });
             Lesson.hasOne(models.ReadingLesson, { foreignKey: 'lessonId' });
             Lesson.hasOne(models.QuizzesLesson, { foreignKey: 'lessonId' });
             Lesson.hasOne(models.VideoLesson, { foreignKey: 'lessonId' });
+
+            // Lesson.hasOne(models.Progress, { foreignKey: 'lessonId' });
         }
     }
     Lesson.init({

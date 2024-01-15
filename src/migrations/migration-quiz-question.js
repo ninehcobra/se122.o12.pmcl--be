@@ -10,6 +10,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       content: { type: Sequelize.TEXT },
+      quizzesLessonId: { type: Sequelize.INTEGER },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

@@ -207,25 +207,46 @@ const updateCourse = async (data) => {
     if (data && course.id) {
         try {
 
-
-            await db.Course.update({
-                title: course.title,
-                description: course.description,
-                thumbnail: course.thumbnail,
-                categoryId: course.categoryId,
-                newPrice: course.newPrice,
-                isPublished: course.isPublished,
-                updatedAt: new Date(),
-                overview: course.overview
-            }, {
-                where: {
-                    id: course.id
+            if (course.updateOverview) {
+                await db.Course.update({
+                    title: course.title,
+                    description: course.description,
+                    thumbnail: course.thumbnail,
+                    categoryId: course.categoryId,
+                    newPrice: course.newPrice,
+                    isPublished: course.isPublished,
+                    updatedAt: new Date(),
+                    overview: course.overview
+                }, {
+                    where: {
+                        id: course.id
+                    }
+                })
+                return {
+                    EC: 0,
+                    EM: 'Update course success'
                 }
-            })
-            return {
-                EC: 0,
-                EM: 'Update course success'
             }
+            else {
+                await db.Course.update({
+                    title: course.title,
+                    description: course.description,
+                    thumbnail: course.thumbnail,
+                    categoryId: course.categoryId,
+                    newPrice: course.newPrice,
+                    isPublished: course.isPublished,
+                    updatedAt: new Date(),
+                }, {
+                    where: {
+                        id: course.id
+                    }
+                })
+                return {
+                    EC: 0,
+                    EM: 'Update course success'
+                }
+            }
+
         } catch (error) {
             return {
                 EC: -1,
@@ -311,12 +332,35 @@ const createReadingLesson = async (data) => {
     }
 };
 
-const createQuizzesLesson = async (data) => {
+const createQuizzesLesson = async (quizzesDetails) => {
     try {
-        const quizzesLesson = await db.QuizzesLesson.create(data.quizzesDetails);
-        return quizzesLesson;
+        const quizzesLesson = await db.QuizzesLesson.create({
+            duration: quizzesDetails.duration,
+        });
+
+        // Tạo câu hỏi và lựa chọn từ quizzesDetails.questions
+        for (const question of quizzesDetails.questions) {
+            const quizQuestion = await db.QuizQuestion.create({
+                content: question.content,
+                quizzesLessonId: quizzesLesson.id, // Liên kết với bài kiểm tra vừa tạo
+            });
+
+            // Tạo lựa chọn cho câu hỏi
+            for (const option of question.options) {
+                if (option.content && option.content !== '') {
+                    await db.QuizOption.create({
+                        content: option.content,
+                        isCorrect: option.isCorrect,
+                        quizQuestionId: quizQuestion.id, // Liên kết với câu hỏi vừa tạo
+                    });
+                }
+
+            }
+        }
+
+        return quizzesLesson
     } catch (error) {
-        console.error('Error creating quizzes lesson:', error);
+        console.error('Error creating reading lesson:', error);
         throw error;
     }
 };
@@ -335,7 +379,7 @@ const createLesson = async (lessonData, lessonDetails) => {
                     const readingLesson = await createReadingLesson(lessonDetails);
                     await lesson.setReadingLesson(readingLesson);
                     break;
-                case 'quizzes':
+                case 'quiz':
                     const quizzesLesson = await createQuizzesLesson(lessonDetails);
                     await lesson.setQuizzesLesson(quizzesLesson);
                     break;
@@ -410,10 +454,22 @@ const getChapter = async (chapterId, userId) => {
                     where: {
                         id: chapterId
                     },
-                    include: {
+                    include: [{
                         model: db.Course,
                         attributes: ['ownerId']
-                    }
+                    },
+                    {
+                        model: db.Lesson, // Thêm model Lesson vào include
+                        include: [{
+                            model: db.ReadingLesson, // Thêm model ReadingLesson vào include
+                        },
+                        {
+                            model: db.QuizzesLesson, // Thêm model QuizzesLesson vào include
+                        },
+                        {
+                            model: db.VideoLesson, // Thêm model VideoLesson vào include
+                        }],
+                    }],
                 }
             )
 
@@ -665,33 +721,42 @@ const getUserCourse = async (userId, categoryId, page, limit, searchQuery) => {
 const getUserListChapter = async (data) => {
     try {
         if (data && data.courseId && data.userId) {
+            console.log('vo day r ne ', data.courseId)
+
             let res = await db.Course.findOne({
                 where: {
                     id: data.courseId
                 },
-                order: [[{ model: db.Chapter }, 'position', 'ASC']],
-
-                include: [{
-                    model: db.Chapter,
-                    where: {
-                        isPublished: true
-                    },
-                    include: {
-                        model: db.Progress,
+                include: [
+                    {
+                        model: db.Chapter,
                         where: {
-                            userId: data.userId
+                            isPublished: true
                         },
-                        required: false
+                        include: {
+                            model: db.Lesson,
+                            include: [
+                                {
+                                    model: db.ReadingLesson
+                                },
+                                {
+                                    model: db.VideoLesson
+                                }
+                                , {
+                                    model: db.QuizzesLesson
+                                }
+                            ]
+                        }
                     }
-                },
-                {
-                    model: db.Purchase,
-                    where: {
-                        userId: data.userId
-                    },
-                    required: false,
-                },
                 ]
+            })
+
+            res.dataValues.Chapters.forEach(chapter => {
+                chapter.dataValues.duration = 0
+                chapter.dataValues.Lessons.forEach(lesson => {
+                    // Kiểm tra loại bài học và cộng thời lượng tương ứng
+                    chapter.dataValues.duration += lesson.dataValues.duration
+                });
             })
 
             let userInfo = await db.User.findOne({
@@ -701,14 +766,13 @@ const getUserListChapter = async (data) => {
                 attributes: ['id', 'name']
             })
 
-            if (res.dataValues.Purchases.length > 0) {
-                let progressPercent = await getProgress(data.userId, res.dataValues.id)
-                res.dataValues.progress = progressPercent
-            }
 
+            let progress = await getProgress(data.userId, data.courseId)
+
+            res.dataValues.progress = progress
 
             res.dataValues.User = userInfo.dataValues
-            console.log(userInfo)
+
             return {
                 EC: 0,
                 EM: 'Get list Chapter success',
@@ -731,37 +795,50 @@ const getUserListChapter = async (data) => {
 
 const getProgress = async (userId, courseId) => {
     try {
+        // Lấy danh sách tất cả các chapter thuộc course đã xuất bản
         let publishedChapters = await db.Chapter.findAll({
             where: {
                 courseId: courseId,
                 isPublished: true
             }
-        })
+        });
 
-        let publishedChapterIds = publishedChapters.map((chapter) => chapter.dataValues.id)
+        // Lấy danh sách id của các chapter đã xuất bản
+        let publishedChapterIds = publishedChapters.map((chapter) => chapter.id);
 
-
-        const validCompletedChapters = await db.Progress.count(
-            {
-                where: {
-                    userId: userId,
-                    chapterId: {
-                        [Op.in]: publishedChapterIds
-                    },
-                    isCompleted: true
-                }
+        // Lấy danh sách tất cả các lesson thuộc các chapter đã xuất bản
+        let publishedLessons = await db.Lesson.findAll({
+            where: {
+                chapterId: {
+                    [Op.in]: publishedChapterIds
+                },
             }
-        )
+        });
 
-        console.log()
+        // Lấy danh sách id của các lesson đã xuất bản
+        let publishedLessonIds = publishedLessons.map((lesson) => lesson.id);
 
-        const progressPercentage = (validCompletedChapters / publishedChapterIds.length) * 100;
-        return progressPercentage
+        // Lấy số lượng lesson đã hoàn thành bởi người dùng
+        const validCompletedLessons = await db.FinishLesson.count({
+            where: {
+                userId: userId,
+                lessonId: {
+                    [Op.in]: publishedLessonIds
+                },
+                isCompleted: true
+            }
+        });
+
+        // Tính toán tỷ lệ tiến độ
+        const progressPercentage = (validCompletedLessons / publishedLessonIds.length) * 100;
+
+        return progressPercentage;
     } catch (error) {
-        console.log('Get progress error:', error)
-
+        console.error('Get progress error:', error);
+        // Có thể ném lỗi hoặc trả giá trị mặc định tùy thuộc vào logic xử lý của bạn
+        throw error;
     }
-}
+};
 
 const getUserPurchase = async (data) => {
     try {
@@ -802,13 +879,46 @@ const getChapterDetail = async (data) => {
                     isPublished: true
                 },
                 include: {
-                    model: db.Progress,
-                    where: {
-                        userId: data.userId,
-                    },
-                    required: false
+                    model: db.Lesson,
+                    include: [
+                        {
+                            model: db.ReadingLesson
+                        },
+                        {
+                            model: db.VideoLesson
+                        }
+                        , {
+                            model: db.QuizzesLesson,
+                            include: [
+                                {
+                                    model: db.QuizQuestion,
+                                    include: [
+                                        {
+                                            model: db.QuizOption
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    order: [['createdAt', 'DESC']]
                 }
             })
+
+
+
+            for (let i = 0; i < res.dataValues.Lessons.length; i++) {
+                const lesson = res.dataValues.Lessons[i].dataValues;
+
+                const progress = await db.FinishLesson.count({
+                    where: {
+                        userId: data.userId,
+                        lessonId: lesson.id,
+                        isCompleted: true
+                    }
+                })
+                res.dataValues.Lessons[i].dataValues.isCompleted = progress === 1 ? true : false;
+            }
 
             return {
                 EC: 0,
@@ -861,15 +971,15 @@ const purchaseCourse = async (data) => {
 
 const markCompleteChapter = async (data) => {
     try {
-        console.log(data.chapterId)
+        console.log('chapter Id ne', data.chapterId)
 
 
 
         if (data.userId && data.chapterId) {
-            let check = await db.Progress.findOne({
+            let check = await db.FinishLesson.findOne({
                 where: {
                     userId: data.userId,
-                    ChapterId: data.chapterId,
+                    lessonId: data.chapterId,
                     isCompleted: true
                 }
             })
@@ -879,9 +989,9 @@ const markCompleteChapter = async (data) => {
                     EM: 'You already done this',
                 }
             }
-            let res = await db.Progress.create({
+            let res = await db.FinishLesson.create({
                 userId: data.userId,
-                ChapterId: data.chapterId,
+                lessonId: data.chapterId,
                 isCompleted: true
             })
 

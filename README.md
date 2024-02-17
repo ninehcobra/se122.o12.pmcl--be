@@ -17,7 +17,7 @@ To run the project, you need to install node.js on your machine. And to ensure t
 
 This project uses the Express framework, which you can learn more about here
 
- - [Express]([https://nextjs.org](https://expressjs.com/)
+ - [Express](https://expressjs.com/)
 
 
 

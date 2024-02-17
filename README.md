@@ -1,5 +1,5 @@
 
-# Online learning website (back end) - Nineh Learning
+# Online learning website (Backend) - Nineh Learning
 
 This project was created to serve Project 2 (SE122.012.PMCL), under the guidance of lecturer: Ths. Tran Anh Dung of UIT - HCMC. 
 

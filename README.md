@@ -1,5 +1,5 @@
 
-# Online learning website - Nineh Learning
+# Online learning website (back end) - Nineh Learning
 
 This project was created to serve Project 2 (SE122.012.PMCL), under the guidance of lecturer: Ths. Tran Anh Dung of UIT - HCMC. 
 
@@ -15,9 +15,9 @@ To run the project, you need to install node.js on your machine. And to ensure t
 
  - [NodeJS](https://nodejs.org/en/download)
 
-This project uses the NextJS framework, which you can learn more about here
+This project uses the Express framework, which you can learn more about here
 
- - [NextJS](https://nextjs.org/)
+ - [Express]([https://nextjs.org](https://expressjs.com/)/)
 
 
 

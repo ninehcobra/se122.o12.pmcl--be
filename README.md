@@ -31,12 +31,12 @@ Project installation instructions:
 Instructions for running the project:
 
 ```bash
-  npm run dev
+  npm start
 ```
 
 
 
-## Demo
+## Logic diagram 
 
-https://nineh-learning.vercel.app/
+![ClassDiagram](https://raw.githubusercontent.com/ninehcobra/free-host-image/main/classdiagram.png)
 
